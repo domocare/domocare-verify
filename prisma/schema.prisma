@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Employee {
+  id           String         @id @default(cuid())
+  firstName    String
+  lastName     String
+  jobTitle     String?
+  agency       String?
+  company      String?
+  photoUrl     String?
+  phoneAgency  String?
+  isActive     Boolean        @default(true)
+  authorization Authorization?
+  qrToken      QrToken?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+}
+
+model Authorization {
+  id         String   @id @default(cuid())
+  employeeId String   @unique
+  status     String
+  validFrom  DateTime?
+  validUntil DateTime?
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model QrToken {
+  id         String   @id @default(cuid())
+  employeeId String   @unique
+  token      String   @unique
+  isActive   Boolean  @default(true)
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  issuedAt   DateTime @default(now())
+  revokedAt  DateTime?
+}
+
+model ScanLog {
+  id        String   @id @default(cuid())
+  token     String
+  result    String
+  userAgent String?
+  createdAt DateTime @default(now())
+}
+
+model IncidentReport {
+  id          String   @id @default(cuid())
+  token       String?
+  reason      String
+  description String?
+  clientName  String?
+  phone       String?
+  email       String?
+  createdAt   DateTime @default(now())
+}
