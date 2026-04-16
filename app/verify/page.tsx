@@ -50,15 +50,15 @@ export default async function VerifyPage({
   }
 
   const isExpiredByDate =
-  !!employee.qrToken.expiresAt &&
-  new Date(employee.qrToken.expiresAt) < new Date();
+    !!employee.qrToken.expiresAt &&
+    new Date(employee.qrToken.expiresAt) < new Date();
 
-const isRevoked =
-  employee.qrToken.isActive === false || !!employee.qrToken.revokedAt;
+  const isRevoked =
+    employee.qrToken.isActive === false || !!employee.qrToken.revokedAt;
 
-const isExpired = isRevoked || isExpiredByDate;
+  const isExpired = isRevoked || isExpiredByDate;
 
-if (isExpired) {
+  if (isExpired) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-100 p-6">
         <div className="w-full max-w-md rounded-2xl bg-white shadow-lg border overflow-hidden text-center">
@@ -74,7 +74,6 @@ if (isExpired) {
       </div>
     );
   }
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-100 p-6">
       <div className="w-full max-w-md rounded-2xl bg-white shadow-lg border overflow-hidden text-center">
