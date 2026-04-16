@@ -43,6 +43,7 @@ model QrToken {
   employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
   issuedAt   DateTime @default(now())
   revokedAt  DateTime?
+  expiresAt  DateTime?
 }
 
 model ScanLog {

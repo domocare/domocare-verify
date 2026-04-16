@@ -1,80 +1,98 @@
-import { toDataURL } from "qrcode";
 import { prisma } from "@/lib/prisma";
+import BackofficeShell from "@/components/backoffice-shell";
+import StatCard from "@/components/stat-card";
+import Link from "next/link";
 
-async function generateQR(token: string) {
-const url = `https://verify.groupe-lantana.fr/verify?token=${token}`;
-  return await toDataURL(url);
-}
-
-export default async function Page() {
-  const employees = await prisma.employee.findMany({
-    include: {
-      authorization: true,
-      qrToken: true,
-    },
-  });
-
-  const employeesWithQr = await Promise.all(
-    employees.map(async (emp) => {
-      const qrImage =
-        emp.qrToken?.token ? await generateQR(emp.qrToken.token) : null;
-
-      return {
-        ...emp,
-        qrImage,
-      };
-    })
-  );
+export default async function DashboardPage() {
+  const [employees, active, expired, suspended, scans] = await Promise.all([
+    prisma.employee.count(),
+    prisma.authorization.count({ where: { status: "active" } }),
+    prisma.authorization.count({ where: { status: "expired" } }),
+    prisma.authorization.count({ where: { status: "suspended" } }),
+    prisma.scanLog.count(),
+  ]);
 
   return (
-    <main className="min-h-screen bg-slate-100 p-8">
-      <div className="max-w-5xl mx-auto space-y-6">
-        <div className="bg-white rounded-2xl shadow p-6">
-          <h1 className="text-3xl font-bold">Domocare Verify</h1>
-          <p className="text-slate-600 mt-2">Lecture réelle depuis Supabase</p>
+    <BackofficeShell
+      title="Contrôle d’habilitation par QR code"
+      subtitle="Back-office Domocare / Lantana pour vérifier, sécuriser et tracer les interventions terrain."
+      actions={
+        <>
+          <Link
+            href="/employees"
+            className="rounded-2xl px-4 py-2 border bg-black text-white"
+          >
+            Vue collaborateurs
+          </Link>
+          <Link
+            href="/employees/new"
+            className="rounded-2xl px-4 py-2 border bg-white"
+          >
+            Ajouter un collaborateur
+          </Link>
+        </>
+      }
+    >
+      <div className="grid md:grid-cols-2 xl:grid-cols-5 gap-4">
+        <StatCard title="Collaborateurs" value={employees} subtitle="Toutes entités" />
+        <StatCard title="Actifs" value={active} subtitle="Habilitations valides" />
+        <StatCard title="Expirés" value={expired} subtitle="À renouveler" />
+        <StatCard title="Suspendus" value={suspended} subtitle="Non autorisés" />
+        <StatCard title="Scans" value={scans} subtitle="Historique total" />
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-6">
+        <div className="rounded-3xl bg-white shadow-sm border p-6">
+          <h2 className="text-xl font-semibold mb-4">Accès rapides</h2>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <Link
+              href="/employees"
+              className="rounded-2xl border p-4 hover:bg-slate-50"
+            >
+              <div className="font-medium">Collaborateurs</div>
+              <div className="text-sm text-slate-500 mt-1">
+                Voir les fiches, statuts et QR codes
+              </div>
+            </Link>
+
+            <Link
+              href="/employees/new"
+              className="rounded-2xl border p-4 hover:bg-slate-50"
+            >
+              <div className="font-medium">Ajouter</div>
+              <div className="text-sm text-slate-500 mt-1">
+                Créer un nouvel intervenant
+              </div>
+            </Link>
+
+            <Link
+              href="/scans"
+              className="rounded-2xl border p-4 hover:bg-slate-50"
+            >
+              <div className="font-medium">Scans</div>
+              <div className="text-sm text-slate-500 mt-1">
+                Historique des vérifications
+              </div>
+            </Link>
+          </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow p-6">
-          <h2 className="text-2xl font-semibold mb-4">Collaborateurs</h2>
-
-          <div className="space-y-4">
-            {employeesWithQr.map((emp) => (
-              <div
-                key={emp.id}
-                className="border rounded-2xl p-4 flex flex-col md:flex-row gap-6 items-start"
-              >
-                <div className="flex-1">
-                  <div className="text-xl font-semibold">
-                    {emp.firstName} {emp.lastName}
-                  </div>
-                  <div className="text-slate-600">{emp.jobTitle || "-"}</div>
-                  <div className="text-slate-600">
-                    {emp.company || "-"} · {emp.agency || "-"}
-                  </div>
-                  <div className="text-slate-600">
-                    Statut : {emp.authorization?.status || "-"}
-                  </div>
-                  <div className="text-slate-600">
-                    Token : {emp.qrToken?.token || "-"}
-                  </div>
-                </div>
-
-                <div>
-                  {emp.qrImage ? (
-                    <img
-                      src={emp.qrImage}
-                      alt={`QR code ${emp.firstName} ${emp.lastName}`}
-                      className="w-32 h-32 border rounded-xl bg-white p-2"
-                    />
-                  ) : (
-                    <div className="text-sm text-slate-400">Pas de QR code</div>
-                  )}
-                </div>
-              </div>
-            ))}
+        <div className="rounded-3xl bg-white shadow-sm border p-6">
+          <h2 className="text-xl font-semibold mb-4">Lecture métier</h2>
+          <div className="space-y-3 text-sm text-slate-600">
+            <p>
+              L’outil permet de rassurer le client final, de sécuriser l’accès
+              aux interventions, et de standardiser les pratiques à l’échelle
+              Domocare.
+            </p>
+            <p>
+              La valeur groupe vient de la traçabilité, de la maîtrise des
+              habilitations et de la capacité à déployer un même standard sur
+              plusieurs agences.
+            </p>
           </div>
         </div>
       </div>
-    </main>
+    </BackofficeShell>
   );
 }
