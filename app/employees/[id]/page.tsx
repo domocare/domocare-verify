@@ -12,11 +12,15 @@ import {
   reactivateEmployee,
   regenerateQrToken,
   suspendEmployee,
+  updateEmployee,
 } from "./actions";
 
 type Props = {
   params: Promise<{
     id: string;
+  }>;
+  searchParams: Promise<{
+    edit?: string;
   }>;
 };
 
@@ -37,6 +41,11 @@ function formatDate(date?: Date | null) {
   }).format(date);
 }
 
+function formatInputDate(date?: Date | null) {
+  if (!date) return "";
+  return date.toISOString().slice(0, 10);
+}
+
 function getStatusLabel(status?: string | null) {
   if (status === "active") return "Autorise";
   if (status === "expired") return "Expire";
@@ -50,21 +59,29 @@ function getBadgeClass(status?: string | null) {
   return "bg-red-100 text-red-700 border-red-200";
 }
 
-export default async function EmployeeDetailPage({ params }: Props) {
+export default async function EmployeeDetailPage({ params, searchParams }: Props) {
   await connection();
 
   const { id } = await params;
+  const { edit } = await searchParams;
+  const isEditing = edit === "1";
 
   let employee: EmployeeWithRelations | null = null;
+  let companies: { id: string; name: string }[] = [];
+  let agencies: { id: string; name: string }[] = [];
 
   try {
-    employee = await prisma.employee.findUnique({
-      where: { id },
-      include: {
-        authorization: true,
-        qrToken: true,
-      },
-    });
+    [employee, companies, agencies] = await Promise.all([
+      prisma.employee.findUnique({
+        where: { id },
+        include: {
+          authorization: true,
+          qrToken: true,
+        },
+      }),
+      prisma.company.findMany({ orderBy: { name: "asc" } }),
+      prisma.agency.findMany({ orderBy: { name: "asc" } }),
+    ]);
   } catch (error) {
     console.error("Employee detail database error", error);
 
@@ -93,20 +110,130 @@ export default async function EmployeeDetailPage({ params }: Props) {
   const suspendAction = suspendEmployee.bind(null, employee.id);
   const reactivateAction = reactivateEmployee.bind(null, employee.id);
   const regenerateAction = regenerateQrToken.bind(null, employee.id);
+  const updateAction = updateEmployee.bind(null, employee.id);
 
   return (
     <BackofficeShell
       title={`${employee.firstName} ${employee.lastName}`}
       subtitle="Fiche collaborateur, statut d'autorisation et QR code de verification."
       actions={
-        <Link href="/employees" className="rounded-lg border bg-white px-4 py-2 text-sm font-medium">
-          Retour a la liste
-        </Link>
+        <>
+          <Link href="/employees" className="rounded-lg border bg-white px-4 py-2 text-sm font-medium">
+            Retour a la liste
+          </Link>
+          {isEditing ? (
+            <Link href={`/employees/${employee.id}`} className="rounded-lg border bg-white px-4 py-2 text-sm font-medium">
+              Annuler
+            </Link>
+          ) : (
+            <Link
+              href={`/employees/${employee.id}?edit=1`}
+              className="rounded-lg bg-slate-950 px-4 py-2 text-sm font-semibold text-white"
+            >
+              Modifier
+            </Link>
+          )}
+        </>
       }
     >
       <div className="grid gap-5 lg:grid-cols-[1fr_340px]">
         <section className="space-y-5">
-          <div className="rounded-lg border bg-white p-5 shadow-sm md:p-6">
+          {isEditing ? (
+            <form action={updateAction} className="rounded-lg border bg-white p-5 shadow-sm md:p-6">
+              <div className="flex flex-wrap items-start justify-between gap-4 border-b pb-5">
+                <div>
+                  <p className="text-sm font-medium text-slate-500">Modification</p>
+                  <h2 className="mt-1 text-2xl font-semibold">Informations collaborateur</h2>
+                  <p className="mt-2 text-sm text-slate-500">
+                    Modifiez les champs utiles puis enregistrez la fiche.
+                  </p>
+                </div>
+                <button
+                  type="submit"
+                  className="rounded-lg bg-slate-950 px-4 py-2 text-sm font-semibold text-white"
+                >
+                  Enregistrer
+                </button>
+              </div>
+
+              <div className="grid gap-4 pt-5 md:grid-cols-2">
+                <EditField label="Prenom" name="firstName" defaultValue={employee.firstName} required />
+                <EditField label="Nom" name="lastName" defaultValue={employee.lastName} required />
+                <EditField label="Fonction" name="jobTitle" defaultValue={employee.jobTitle} />
+                <EditSelect
+                  label="Societe"
+                  name="company"
+                  defaultValue={employee.company}
+                  items={companies}
+                  emptyLabel="Choisir une societe"
+                />
+                <EditSelect
+                  label="Agence"
+                  name="agency"
+                  defaultValue={employee.agency}
+                  items={agencies}
+                  emptyLabel="Choisir une agence"
+                />
+                <EditField label="Telephone agence" name="phoneAgency" defaultValue={employee.phoneAgency} />
+                <EditField label="Type intervention" name="interventionType" defaultValue={employee.interventionType} />
+                <EditField label="Vehicule / plaque" name="vehiclePlate" defaultValue={employee.vehiclePlate} />
+                <EditField label="Client ou site autorise" name="authorizedSite" defaultValue={employee.authorizedSite} />
+                <EditField label="Photo URL ou base64" name="photoUrl" defaultValue={employee.photoUrl} />
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-slate-600" htmlFor="status">
+                    Statut habilitation
+                  </label>
+                  <select
+                    id="status"
+                    name="status"
+                    defaultValue={status}
+                    className="w-full rounded-lg border bg-white px-4 py-3"
+                  >
+                    <option value="active">active</option>
+                    <option value="expired">expired</option>
+                    <option value="revoked">revoked</option>
+                    <option value="suspended">suspended</option>
+                  </select>
+                </div>
+
+                <EditField
+                  label="Autorisation depuis"
+                  name="validFrom"
+                  type="date"
+                  defaultValue={formatInputDate(employee.authorization?.validFrom)}
+                />
+                <EditField
+                  label="Valide jusqu'au"
+                  name="validUntil"
+                  type="date"
+                  defaultValue={formatInputDate(employee.authorization?.validUntil)}
+                />
+                <EditField
+                  label="Expiration QR"
+                  name="qrExpiresAt"
+                  type="date"
+                  defaultValue={formatInputDate(employee.qrToken?.expiresAt)}
+                />
+              </div>
+
+              <div className="mt-5 flex flex-wrap gap-3">
+                <button
+                  type="submit"
+                  className="rounded-lg bg-slate-950 px-5 py-3 text-sm font-semibold text-white"
+                >
+                  Enregistrer
+                </button>
+                <Link
+                  href={`/employees/${employee.id}`}
+                  className="rounded-lg border bg-white px-5 py-3 text-sm font-semibold text-slate-800"
+                >
+                  Annuler
+                </Link>
+              </div>
+            </form>
+          ) : (
+            <div className="rounded-lg border bg-white p-5 shadow-sm md:p-6">
           <div className="flex flex-wrap items-start justify-between gap-4 border-b pb-5">
             <div className="flex flex-wrap items-center gap-4">
               {employee.photoUrl ? (
@@ -158,6 +285,7 @@ export default async function EmployeeDetailPage({ params }: Props) {
             </p>
           </div>
           </div>
+          )}
 
           <div className="rounded-lg border bg-white p-5 shadow-sm md:p-6">
             <h3 className="text-lg font-semibold">Actions</h3>
@@ -241,6 +369,75 @@ function InfoItem({ label, value }: { label: string; value?: string | null }) {
     <div className="rounded-lg bg-slate-50 p-4">
       <p className="text-sm font-medium text-slate-500">{label}</p>
       <p className="mt-1 font-semibold text-slate-900">{value || "-"}</p>
+    </div>
+  );
+}
+
+function EditField({
+  label,
+  name,
+  defaultValue,
+  type = "text",
+  required = false,
+}: {
+  label: string;
+  name: string;
+  defaultValue?: string | null;
+  type?: string;
+  required?: boolean;
+}) {
+  return (
+    <div className="space-y-2">
+      <label className="text-sm font-medium text-slate-600" htmlFor={name}>
+        {label}
+      </label>
+      <input
+        id={name}
+        name={name}
+        type={type}
+        defaultValue={defaultValue || ""}
+        required={required}
+        className="w-full rounded-lg border bg-white px-4 py-3"
+      />
+    </div>
+  );
+}
+
+function EditSelect({
+  label,
+  name,
+  defaultValue,
+  items,
+  emptyLabel,
+}: {
+  label: string;
+  name: string;
+  defaultValue?: string | null;
+  items: { id: string; name: string }[];
+  emptyLabel: string;
+}) {
+  const hasCurrentValue =
+    !!defaultValue && !items.some((item) => item.name === defaultValue);
+
+  return (
+    <div className="space-y-2">
+      <label className="text-sm font-medium text-slate-600" htmlFor={name}>
+        {label}
+      </label>
+      <select
+        id={name}
+        name={name}
+        defaultValue={defaultValue || ""}
+        className="w-full rounded-lg border bg-white px-4 py-3"
+      >
+        <option value="">{emptyLabel}</option>
+        {hasCurrentValue ? <option value={defaultValue || ""}>{defaultValue}</option> : null}
+        {items.map((item) => (
+          <option key={item.id} value={item.name}>
+            {item.name}
+          </option>
+        ))}
+      </select>
     </div>
   );
 }
