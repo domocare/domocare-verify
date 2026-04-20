@@ -12,7 +12,13 @@ function normalizeEmail(value: unknown) {
 }
 
 export async function POST(req: Request) {
-  const existingUsers = await prisma.appUser.count();
+  const existingUsers = await prisma.appUser.count({
+    where: {
+      passwordHash: {
+        not: null,
+      },
+    },
+  });
 
   if (existingUsers > 0) {
     return Response.json({ ok: false }, { status: 403 });
@@ -28,9 +34,17 @@ export async function POST(req: Request) {
     return Response.json({ ok: false }, { status: 400 });
   }
 
-  const user = await prisma.appUser.create({
-    data: {
+  const user = await prisma.appUser.upsert({
+    where: { email },
+    create: {
       email,
+      firstName,
+      lastName,
+      role: "SUPER_ADMIN_GROUP",
+      passwordHash: hashPassword(password),
+      isActive: true,
+    },
+    update: {
       firstName,
       lastName,
       role: "SUPER_ADMIN_GROUP",
