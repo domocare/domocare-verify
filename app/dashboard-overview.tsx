@@ -111,7 +111,7 @@ export default function DashboardOverview({
   const filteredEmployees = useMemo(() => {
     const normalized = query.trim().toLowerCase();
 
-    if (!normalized) return employees.slice(0, 8);
+    if (!normalized) return employees.slice(0, 5);
 
     return employees
       .filter((employee) =>
@@ -128,10 +128,10 @@ export default function DashboardOverview({
           .toLowerCase()
           .includes(normalized),
       )
-      .slice(0, 10);
+      .slice(0, 5);
   }, [employees, query]);
 
-  const recentEmployees = employees.slice(0, 6);
+  const recentEmployees = employees.slice(0, 5);
   const alertEmployees = employees
     .filter((employee) => employee.status !== "active")
     .slice(0, 5);
