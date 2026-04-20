@@ -5,6 +5,7 @@ import { connection } from "next/server";
 import type { Prisma } from "@prisma/client";
 import BackofficeShell from "@/components/backoffice-shell";
 import DatabaseErrorPanel from "@/components/database-error-panel";
+import EmployeeCardExport from "@/components/employee-card-export";
 import { prisma } from "@/lib/prisma";
 import { getVerifyUrl } from "@/lib/urls";
 import {
@@ -207,6 +208,24 @@ export default async function EmployeeDetailPage({ params }: Props) {
               >
                 {verifyUrl}
               </a>
+              <EmployeeCardExport
+                employee={{
+                  firstName: employee.firstName,
+                  lastName: employee.lastName,
+                  jobTitle: employee.jobTitle,
+                  company: employee.company,
+                  agency: employee.agency,
+                  photoUrl: employee.photoUrl,
+                  phoneAgency: employee.phoneAgency,
+                  interventionType: employee.interventionType,
+                  vehiclePlate: employee.vehiclePlate,
+                  authorizedSite: employee.authorizedSite,
+                }}
+                statusLabel={getStatusLabel(status)}
+                validUntil={formatDate(employee.authorization?.validUntil)}
+                qrImage={qrImage}
+                verifyUrl={verifyUrl}
+              />
             </div>
           ) : (
             <p className="mt-5 text-sm text-slate-500">Aucun QR code disponible.</p>
