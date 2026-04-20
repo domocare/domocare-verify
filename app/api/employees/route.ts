@@ -8,6 +8,15 @@ function generateToken() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
+    const photoUrl = typeof body.photoUrl === "string" ? body.photoUrl : "";
+
+    if (photoUrl && !photoUrl.startsWith("data:image/")) {
+      return Response.json({ ok: false }, { status: 400 });
+    }
+
+    if (photoUrl.length > 2_100_000) {
+      return Response.json({ ok: false }, { status: 413 });
+    }
 
     const employee = await prisma.employee.create({
       data: {
@@ -16,7 +25,7 @@ export async function POST(req: Request) {
         jobTitle: body.jobTitle || null,
         agency: body.agency || null,
         company: body.company || null,
-        photoUrl: body.photoUrl || null,
+        photoUrl: photoUrl || null,
         phoneAgency: body.phoneAgency || null,
         isActive: true,
       },
@@ -31,15 +40,14 @@ export async function POST(req: Request) {
       },
     });
 
-await prisma.qrToken.create({
-  data: {
-    id: crypto.randomUUID(),
-    employeeId: employee.id,
-    token: generateToken(),
-    isActive: true,
-    expiresAt: body.expiresAt ? new Date(body.expiresAt) : null,
-  },
-});
+    await prisma.qrToken.create({
+      data: {
+        id: crypto.randomUUID(),
+        employeeId: employee.id,
+        token: generateToken(),
+        isActive: true,
+        expiresAt: body.expiresAt ? new Date(body.expiresAt) : null,
+      },
     });
 
     return Response.json({ ok: true });

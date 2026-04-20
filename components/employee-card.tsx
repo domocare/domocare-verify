@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 type EmployeeCardProps = {
   employee: {
     id: string;
@@ -6,6 +8,7 @@ type EmployeeCardProps = {
     jobTitle: string | null;
     agency: string | null;
     company: string | null;
+    photoUrl: string | null;
     qrToken?: { token: string } | null;
     authorization?: { status: string | null } | null;
     qrImage?: string | null;
@@ -18,20 +21,44 @@ function badgeClass(status?: string | null) {
   return "bg-red-100 text-red-700";
 }
 
+function statusLabel(status?: string | null) {
+  if (status === "active") return "Autorise";
+  if (status === "expired") return "Expire";
+  if (status === "revoked" || status === "suspended") return "Suspendu";
+  return "Inconnu";
+}
+
 export default function EmployeeCard({ employee }: EmployeeCardProps) {
   return (
     <div className="bg-white rounded-2xl shadow p-5 border flex flex-col lg:flex-row gap-6">
+      <div className="flex justify-center lg:justify-start">
+        {employee.photoUrl ? (
+          <img
+            src={employee.photoUrl}
+            alt={`${employee.firstName} ${employee.lastName}`}
+            className="h-24 w-24 rounded-xl object-cover border bg-slate-50"
+          />
+        ) : (
+          <div className="flex h-24 w-24 items-center justify-center rounded-xl border bg-slate-50 text-sm text-slate-400">
+            Photo
+          </div>
+        )}
+      </div>
+
       <div className="flex-1 space-y-3">
         <div className="flex items-center gap-3 flex-wrap">
-          <h2 className="text-2xl font-semibold">
+          <Link
+            href={`/employees/${employee.id}`}
+            className="text-2xl font-semibold hover:underline"
+          >
             {employee.firstName} {employee.lastName}
-          </h2>
+          </Link>
           <span
             className={`px-3 py-1 rounded-full text-xs font-medium ${badgeClass(
               employee.authorization?.status
             )}`}
           >
-            {employee.authorization?.status || "inconnu"}
+            {statusLabel(employee.authorization?.status)}
           </span>
         </div>
 

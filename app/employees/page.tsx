@@ -1,10 +1,13 @@
 import QRCode from "qrcode";
-import { prisma } from "@/lib/prisma";
-import BackofficeShell from "@/components/backoffice-shell";
-import EmployeeCard from "@/components/employee-card";
 import Link from "next/link";
+import { connection } from "next/server";
+import BackofficeShell from "@/components/backoffice-shell";
+import DatabaseErrorPanel from "@/components/database-error-panel";
+import EmployeeCard from "@/components/employee-card";
+import { prisma } from "@/lib/prisma";
+import { getVerifyUrl } from "@/lib/urls";
 
-export default async function EmployeesPage() {
+async function getEmployeesWithQr() {
   const employees = await prisma.employee.findMany({
     include: {
       authorization: true,
@@ -15,12 +18,9 @@ export default async function EmployeesPage() {
     },
   });
 
-  const employeesWithQR = await Promise.all(
+  return Promise.all(
     employees.map(async (emp) => {
-      const qrUrl = emp.qrToken?.token
-        ? `https://verify.groupe-lantana.fr/verify?token=${emp.qrToken.token}`
-        : null;
-
+      const qrUrl = emp.qrToken?.token ? getVerifyUrl(emp.qrToken.token) : null;
       const qrImage = qrUrl ? await QRCode.toDataURL(qrUrl) : null;
 
       return {
@@ -29,33 +29,41 @@ export default async function EmployeesPage() {
       };
     })
   );
+}
+
+export default async function EmployeesPage() {
+  await connection();
+
+  let employeesWithQR: Awaited<ReturnType<typeof getEmployeesWithQr>> | null = null;
+
+  try {
+    employeesWithQR = await getEmployeesWithQr();
+  } catch (error) {
+    console.error("Employees database error", error);
+  }
 
   return (
     <BackofficeShell
       title="Collaborateurs"
-      subtitle="Liste des intervenants enregistrés, avec statut, token et QR code."
+      subtitle="Liste des intervenants enregistres, avec statut, token et QR code."
       actions={
         <Link
           href="/employees/new"
-          className="inline-block rounded-xl bg-black text-white px-4 py-2"
+          className="inline-block rounded-lg bg-black px-4 py-2 text-white"
         >
           + Ajouter un collaborateur
         </Link>
       }
     >
-  <div className="space-y-2">
-  <label className="text-sm font-medium">Date d’expiration du QR code</label>
-  <input
-    type="date"
-    name="expiresAt"
-    className="w-full rounded-xl border px-4 py-3"
-  />
-</div>      
-      <div className="grid gap-4">
-        {employeesWithQR.map((emp) => (
-          <EmployeeCard key={emp.id} employee={emp} />
-        ))}
-      </div>
+      {employeesWithQR ? (
+        <div className="grid gap-4">
+          {employeesWithQR.map((emp) => (
+            <EmployeeCard key={emp.id} employee={emp} />
+          ))}
+        </div>
+      ) : (
+        <DatabaseErrorPanel title="Collaborateurs indisponibles" />
+      )}
     </BackofficeShell>
   );
 }
