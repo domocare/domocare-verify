@@ -10,9 +10,14 @@ type SettingItem = {
   name: string;
 };
 
+type AgencyItem = SettingItem & {
+  companyId: string | null;
+  company?: SettingItem | null;
+};
+
 type OptionsResponse = {
   companies: SettingItem[];
-  agencies: SettingItem[];
+  agencies: AgencyItem[];
 };
 
 export default function NewEmployeePage() {
@@ -32,7 +37,7 @@ export default function NewEmployeePage() {
   });
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [companies, setCompanies] = useState<SettingItem[]>([]);
-  const [agencies, setAgencies] = useState<SettingItem[]>([]);
+  const [agencies, setAgencies] = useState<AgencyItem[]>([]);
   const [settingsError, setSettingsError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -101,6 +106,11 @@ export default function NewEmployeePage() {
       alert("Erreur lors de la creation");
     }
   }
+
+  const selectedCompany = companies.find((company) => company.name === form.company);
+  const filteredAgencies = selectedCompany
+    ? agencies.filter((agency) => agency.companyId === selectedCompany.id)
+    : [];
 
   return (
     <BackofficeShell
@@ -177,9 +187,12 @@ export default function NewEmployeePage() {
                 className="w-full border rounded-xl p-3"
                 value={form.agency}
                 onChange={(e) => setForm({ ...form, agency: e.target.value })}
+                disabled={!form.company}
               >
-                <option value="">Choisir une agence</option>
-                {agencies.map((agency) => (
+                <option value="">
+                  {form.company ? "Choisir une agence" : "Choisir d'abord une societe"}
+                </option>
+                {filteredAgencies.map((agency) => (
                   <option key={agency.id} value={agency.name}>
                     {agency.name}
                   </option>
@@ -192,7 +205,7 @@ export default function NewEmployeePage() {
               <select
                 className="w-full border rounded-xl p-3"
                 value={form.company}
-                onChange={(e) => setForm({ ...form, company: e.target.value })}
+                onChange={(e) => setForm({ ...form, company: e.target.value, agency: "" })}
               >
                 <option value="">Choisir une societe</option>
                 {companies.map((company) => (

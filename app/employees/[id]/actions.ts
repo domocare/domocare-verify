@@ -39,22 +39,26 @@ function readDate(formData: FormData, key: string) {
 }
 
 async function ensureSettings(company: string | null, agency: string | null) {
-  await Promise.all([
-    company
-      ? prisma.company.upsert({
-          where: { name: company },
-          update: {},
-          create: { name: company },
-        })
-      : Promise.resolve(),
-    agency
-      ? prisma.agency.upsert({
-          where: { name: agency },
-          update: {},
-          create: { name: agency },
-        })
-      : Promise.resolve(),
-  ]);
+  const companyRecord = company
+    ? await prisma.company.upsert({
+        where: { name: company },
+        update: {},
+        create: { name: company },
+      })
+    : null;
+
+  if (agency) {
+    await prisma.agency.upsert({
+      where: { name: agency },
+      update: {
+        companyId: companyRecord?.id,
+      },
+      create: {
+        name: agency,
+        companyId: companyRecord?.id,
+      },
+    });
+  }
 }
 
 export async function updateEmployee(employeeId: string, formData: FormData) {
@@ -75,6 +79,17 @@ export async function updateEmployee(employeeId: string, formData: FormData) {
   const now = new Date();
 
   await ensureSettings(company, agency);
+
+  if (company && agency) {
+    const selectedAgency = await prisma.agency.findUnique({
+      where: { name: agency },
+      include: { company: true },
+    });
+
+    if (selectedAgency?.company && selectedAgency.company.name !== company) {
+      throw new Error("L'agence selectionnee n'est pas rattachee a cette societe.");
+    }
+  }
 
   await prisma.$transaction([
     prisma.employee.update({

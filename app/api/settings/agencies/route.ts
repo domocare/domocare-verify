@@ -2,8 +2,9 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   const agencies = await prisma.agency.findMany({
-    orderBy: {
-      name: "asc",
+    orderBy: [{ company: { name: "asc" } }, { name: "asc" }],
+    include: {
+      company: true,
     },
   });
 
@@ -13,15 +14,22 @@ export async function GET() {
 export async function POST(req: Request) {
   const body = await req.json();
   const name = typeof body.name === "string" ? body.name.trim() : "";
+  const companyId = typeof body.companyId === "string" && body.companyId ? body.companyId : null;
 
-  if (!name) {
+  if (!name || !companyId) {
     return Response.json({ ok: false }, { status: 400 });
+  }
+
+  const company = await prisma.company.findUnique({ where: { id: companyId } });
+
+  if (!company) {
+    return Response.json({ ok: false, message: "Societe introuvable." }, { status: 404 });
   }
 
   const agency = await prisma.agency.upsert({
     where: { name },
-    create: { name },
-    update: {},
+    create: { name, companyId },
+    update: { companyId },
   });
 
   return Response.json({ ok: true, agency });
@@ -31,9 +39,16 @@ export async function PATCH(req: Request) {
   const body = await req.json();
   const id = typeof body.id === "string" ? body.id : "";
   const name = typeof body.name === "string" ? body.name.trim() : "";
+  const companyId = typeof body.companyId === "string" && body.companyId ? body.companyId : null;
 
-  if (!id || !name) {
+  if (!id || !name || !companyId) {
     return Response.json({ ok: false, message: "Champs manquants." }, { status: 400 });
+  }
+
+  const company = await prisma.company.findUnique({ where: { id: companyId } });
+
+  if (!company) {
+    return Response.json({ ok: false, message: "Societe introuvable." }, { status: 404 });
   }
 
   const existing = await prisma.agency.findUnique({ where: { id } });
@@ -51,7 +66,7 @@ export async function PATCH(req: Request) {
   const [agency] = await prisma.$transaction([
     prisma.agency.update({
       where: { id },
-      data: { name },
+      data: { name, companyId },
     }),
     prisma.employee.updateMany({
       where: { agency: existing.name },

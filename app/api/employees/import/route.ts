@@ -23,22 +23,26 @@ function isValidPhoto(value?: string | null) {
 }
 
 async function ensureSettings(company?: string | null, agency?: string | null) {
-  await Promise.all([
-    company
-      ? prisma.company.upsert({
-          where: { name: company },
-          update: {},
-          create: { name: company },
-        })
-      : Promise.resolve(),
-    agency
-      ? prisma.agency.upsert({
-          where: { name: agency },
-          update: {},
-          create: { name: agency },
-        })
-      : Promise.resolve(),
-  ]);
+  const companyRecord = company
+    ? await prisma.company.upsert({
+        where: { name: company },
+        update: {},
+        create: { name: company },
+      })
+    : null;
+
+  if (agency) {
+    await prisma.agency.upsert({
+      where: { name: agency },
+      update: {
+        companyId: companyRecord?.id,
+      },
+      create: {
+        name: agency,
+        companyId: companyRecord?.id,
+      },
+    });
+  }
 }
 
 export async function POST(req: Request) {

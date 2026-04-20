@@ -7,21 +7,28 @@ type SettingItem = {
   name: string;
 };
 
+type AgencyItem = SettingItem & {
+  companyId: string | null;
+  company?: SettingItem | null;
+};
+
 type OptionsResponse = {
   companies: SettingItem[];
-  agencies: SettingItem[];
+  agencies: AgencyItem[];
 };
 
 export default function SettingsClient() {
   const [companies, setCompanies] = useState<SettingItem[]>([]);
-  const [agencies, setAgencies] = useState<SettingItem[]>([]);
+  const [agencies, setAgencies] = useState<AgencyItem[]>([]);
   const [companyName, setCompanyName] = useState("");
   const [agencyName, setAgencyName] = useState("");
+  const [agencyCompanyId, setAgencyCompanyId] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [editingCompany, setEditingCompany] = useState<SettingItem | null>(null);
-  const [editingAgency, setEditingAgency] = useState<SettingItem | null>(null);
+  const [editingAgency, setEditingAgency] = useState<AgencyItem | null>(null);
   const [companyEditName, setCompanyEditName] = useState("");
   const [agencyEditName, setAgencyEditName] = useState("");
+  const [agencyEditCompanyId, setAgencyEditCompanyId] = useState("");
 
   async function loadOptions() {
     const res = await fetch("/api/settings/options");
@@ -90,7 +97,7 @@ export default function SettingsClient() {
     const res = await fetch("/api/settings/agencies", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: agencyName }),
+      body: JSON.stringify({ name: agencyName, companyId: agencyCompanyId }),
     });
 
     if (!res.ok) {
@@ -99,6 +106,7 @@ export default function SettingsClient() {
     }
 
     setAgencyName("");
+    setAgencyCompanyId("");
     await loadOptions();
   }
 
@@ -142,7 +150,11 @@ export default function SettingsClient() {
     const res = await fetch("/api/settings/agencies", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: editingAgency.id, name: agencyEditName }),
+      body: JSON.stringify({
+        id: editingAgency.id,
+        name: agencyEditName,
+        companyId: agencyEditCompanyId,
+      }),
     });
 
     if (!res.ok) {
@@ -152,6 +164,7 @@ export default function SettingsClient() {
 
     setEditingAgency(null);
     setAgencyEditName("");
+    setAgencyEditCompanyId("");
     await loadOptions();
   }
 
@@ -244,7 +257,7 @@ export default function SettingsClient() {
       <section className="rounded-lg border bg-white p-5 shadow-sm">
         <h2 className="text-xl font-semibold">Agences</h2>
 
-        <form onSubmit={addAgency} className="mt-4 flex flex-col gap-3 sm:flex-row">
+        <form onSubmit={addAgency} className="mt-4 grid gap-3">
           <input
             value={agencyName}
             onChange={(e) => setAgencyName(e.target.value)}
@@ -252,6 +265,19 @@ export default function SettingsClient() {
             placeholder="Nom de l'agence"
             required
           />
+          <select
+            value={agencyCompanyId}
+            onChange={(e) => setAgencyCompanyId(e.target.value)}
+            className="min-w-0 flex-1 rounded-lg border px-4 py-3"
+            required
+          >
+            <option value="">Rattacher a une societe</option>
+            {companies.map((company) => (
+              <option key={company.id} value={company.id}>
+                {company.name}
+              </option>
+            ))}
+          </select>
           <button
             type="submit"
             className="rounded-lg bg-black px-4 py-3 text-sm font-semibold text-white"
@@ -271,13 +297,18 @@ export default function SettingsClient() {
                 editingItem={editingAgency}
                 editName={agencyEditName}
                 setEditName={setAgencyEditName}
+                companies={companies}
+                editCompanyId={agencyEditCompanyId}
+                setEditCompanyId={setAgencyEditCompanyId}
                 startEdit={() => {
                   setEditingAgency(agency);
                   setAgencyEditName(agency.name);
+                  setAgencyEditCompanyId(agency.companyId || "");
                 }}
                 cancelEdit={() => {
                   setEditingAgency(null);
                   setAgencyEditName("");
+                  setAgencyEditCompanyId("");
                 }}
                 onSubmit={updateAgency}
                 onDelete={() => deleteAgency(agency)}
@@ -301,15 +332,21 @@ function SettingRow({
   editingItem,
   editName,
   setEditName,
+  companies,
+  editCompanyId,
+  setEditCompanyId,
   startEdit,
   cancelEdit,
   onSubmit,
   onDelete,
 }: {
-  item: SettingItem;
-  editingItem: SettingItem | null;
+  item: SettingItem | AgencyItem;
+  editingItem: SettingItem | AgencyItem | null;
   editName: string;
   setEditName: (value: string) => void;
+  companies?: SettingItem[];
+  editCompanyId?: string;
+  setEditCompanyId?: (value: string) => void;
   startEdit: () => void;
   cancelEdit: () => void;
   onSubmit: (e: React.FormEvent) => void;
@@ -320,13 +357,28 @@ function SettingRow({
   if (isEditing) {
     return (
       <form onSubmit={onSubmit} className="rounded-lg border border-emerald-200 bg-emerald-50 p-3">
-        <div className="flex flex-col gap-2 sm:flex-row">
+        <div className="grid gap-2 sm:grid-cols-[1fr_1fr_auto_auto]">
           <input
             value={editName}
             onChange={(e) => setEditName(e.target.value)}
             className="min-w-0 flex-1 rounded-lg border bg-white px-4 py-2"
             required
           />
+          {companies && setEditCompanyId ? (
+            <select
+              value={editCompanyId || ""}
+              onChange={(e) => setEditCompanyId(e.target.value)}
+              className="min-w-0 flex-1 rounded-lg border bg-white px-4 py-2"
+              required
+            >
+              <option value="">Societe</option>
+              {companies.map((company) => (
+                <option key={company.id} value={company.id}>
+                  {company.name}
+                </option>
+              ))}
+            </select>
+          ) : null}
           <button
             type="submit"
             className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white"
@@ -347,7 +399,14 @@ function SettingRow({
 
   return (
     <div className="flex flex-col gap-3 rounded-lg bg-slate-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-      <span className="font-medium text-slate-900">{item.name}</span>
+      <div>
+        <span className="font-medium text-slate-900">{item.name}</span>
+        {"company" in item ? (
+          <p className="mt-1 text-xs font-medium text-slate-500">
+            {item.company?.name || "Aucune societe rattachee"}
+          </p>
+        ) : null}
+      </div>
       <div className="flex gap-2">
         <button
           type="button"

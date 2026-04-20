@@ -18,6 +18,20 @@ export async function POST(req: Request) {
       return Response.json({ ok: false }, { status: 413 });
     }
 
+    if (body.company && body.agency) {
+      const agency = await prisma.agency.findUnique({
+        where: { name: body.agency },
+        include: { company: true },
+      });
+
+      if (agency?.company && agency.company.name !== body.company) {
+        return Response.json(
+          { ok: false, message: "Agence non rattachee a la societe selectionnee." },
+          { status: 400 },
+        );
+      }
+    }
+
     const employee = await prisma.employee.create({
       data: {
         firstName: body.firstName,

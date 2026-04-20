@@ -68,7 +68,7 @@ export default async function EmployeeDetailPage({ params, searchParams }: Props
 
   let employee: EmployeeWithRelations | null = null;
   let companies: { id: string; name: string }[] = [];
-  let agencies: { id: string; name: string }[] = [];
+  let agencies: { id: string; name: string; companyId: string | null }[] = [];
 
   try {
     [employee, companies, agencies] = await Promise.all([
@@ -80,7 +80,10 @@ export default async function EmployeeDetailPage({ params, searchParams }: Props
         },
       }),
       prisma.company.findMany({ orderBy: { name: "asc" } }),
-      prisma.agency.findMany({ orderBy: { name: "asc" } }),
+      prisma.agency.findMany({
+        orderBy: [{ company: { name: "asc" } }, { name: "asc" }],
+        include: { company: true },
+      }),
     ]);
   } catch (error) {
     console.error("Employee detail database error", error);
@@ -111,6 +114,10 @@ export default async function EmployeeDetailPage({ params, searchParams }: Props
   const reactivateAction = reactivateEmployee.bind(null, employee.id);
   const regenerateAction = regenerateQrToken.bind(null, employee.id);
   const updateAction = updateEmployee.bind(null, employee.id);
+  const selectedCompany = companies.find((company) => company.name === employee.company);
+  const filteredAgencies = selectedCompany
+    ? agencies.filter((agency) => agency.companyId === selectedCompany.id)
+    : agencies;
 
   return (
     <BackofficeShell
@@ -171,8 +178,8 @@ export default async function EmployeeDetailPage({ params, searchParams }: Props
                   label="Agence"
                   name="agency"
                   defaultValue={employee.agency}
-                  items={agencies}
-                  emptyLabel="Choisir une agence"
+                  items={filteredAgencies}
+                  emptyLabel={employee.company ? "Choisir une agence" : "Choisir une societe d'abord"}
                 />
                 <EditField label="Telephone agence" name="phoneAgency" defaultValue={employee.phoneAgency} />
                 <EditField label="Type intervention" name="interventionType" defaultValue={employee.interventionType} />
