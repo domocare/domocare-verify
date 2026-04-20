@@ -1,9 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import BackofficeShell from "@/components/backoffice-shell";
 
 const MAX_PHOTO_SIZE = 1_500_000;
+
+type SettingItem = {
+  id: string;
+  name: string;
+};
+
+type OptionsResponse = {
+  companies: SettingItem[];
+  agencies: SettingItem[];
+};
 
 export default function NewEmployeePage() {
   const [form, setForm] = useState({
@@ -18,6 +28,26 @@ export default function NewEmployeePage() {
     expiresAt: "",
   });
   const [photoError, setPhotoError] = useState<string | null>(null);
+  const [companies, setCompanies] = useState<SettingItem[]>([]);
+  const [agencies, setAgencies] = useState<SettingItem[]>([]);
+  const [settingsError, setSettingsError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function loadSettings() {
+      const res = await fetch("/api/settings/options");
+
+      if (!res.ok) {
+        setSettingsError("Impossible de charger les societes et agences.");
+        return;
+      }
+
+      const data = (await res.json()) as OptionsResponse;
+      setCompanies(data.companies);
+      setAgencies(data.agencies);
+    }
+
+    loadSettings();
+  }, []);
 
   async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -138,20 +168,48 @@ export default function NewEmployeePage() {
           />
 
           <div className="grid gap-4 md:grid-cols-2">
-            <input
-              className="w-full border rounded-xl p-3"
-              placeholder="Agence"
-              value={form.agency}
-              onChange={(e) => setForm({ ...form, agency: e.target.value })}
-            />
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Agence</label>
+              <select
+                className="w-full border rounded-xl p-3"
+                value={form.agency}
+                onChange={(e) => setForm({ ...form, agency: e.target.value })}
+              >
+                <option value="">Choisir une agence</option>
+                {agencies.map((agency) => (
+                  <option key={agency.id} value={agency.name}>
+                    {agency.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-            <input
-              className="w-full border rounded-xl p-3"
-              placeholder="Societe"
-              value={form.company}
-              onChange={(e) => setForm({ ...form, company: e.target.value })}
-            />
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Societe</label>
+              <select
+                className="w-full border rounded-xl p-3"
+                value={form.company}
+                onChange={(e) => setForm({ ...form, company: e.target.value })}
+              >
+                <option value="">Choisir une societe</option>
+                {companies.map((company) => (
+                  <option key={company.id} value={company.name}>
+                    {company.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
+
+          {settingsError ? (
+            <p className="text-sm text-red-600">{settingsError}</p>
+          ) : null}
+
+          {companies.length === 0 || agencies.length === 0 ? (
+            <a href="/settings" className="text-sm underline">
+              Ajouter des societes ou agences dans Parametrage
+            </a>
+          ) : null}
 
           <input
             className="w-full border rounded-xl p-3"
