@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BadgeCheck, Clock3, QrCode, ShieldAlert } from "lucide-react";
 
 type EmployeeCardProps = {
   employee: {
@@ -16,9 +17,9 @@ type EmployeeCardProps = {
 };
 
 function badgeClass(status?: string | null) {
-  if (status === "active") return "bg-green-100 text-green-700";
-  if (status === "expired") return "bg-amber-100 text-amber-700";
-  return "bg-red-100 text-red-700";
+  if (status === "active") return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  if (status === "expired") return "border-amber-200 bg-amber-50 text-amber-700";
+  return "border-red-200 bg-red-50 text-red-700";
 }
 
 function statusLabel(status?: string | null) {
@@ -29,65 +30,79 @@ function statusLabel(status?: string | null) {
 }
 
 export default function EmployeeCard({ employee }: EmployeeCardProps) {
-  return (
-    <div className="bg-white rounded-2xl shadow p-5 border flex flex-col lg:flex-row gap-6">
-      <div className="flex justify-center lg:justify-start">
-        {employee.photoUrl ? (
-          <img
-            src={employee.photoUrl}
-            alt={`${employee.firstName} ${employee.lastName}`}
-            className="h-24 w-24 rounded-xl object-cover border bg-slate-50"
-          />
-        ) : (
-          <div className="flex h-24 w-24 items-center justify-center rounded-xl border bg-slate-50 text-sm text-slate-400">
-            Photo
-          </div>
-        )}
-      </div>
+  const status = employee.authorization?.status;
+  const StatusIcon = status === "active" ? BadgeCheck : status === "expired" ? Clock3 : ShieldAlert;
 
-      <div className="flex-1 space-y-3">
-        <div className="flex items-center gap-3 flex-wrap">
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-center">
+        <div className="flex min-w-0 flex-1 items-center gap-4">
+          {employee.photoUrl ? (
+            <img
+              src={employee.photoUrl}
+              alt={`${employee.firstName} ${employee.lastName}`}
+              className="h-16 w-16 rounded-lg border bg-slate-50 object-cover"
+            />
+          ) : (
+            <div className="flex h-16 w-16 items-center justify-center rounded-lg border bg-slate-50 text-sm font-semibold text-slate-400">
+              {employee.firstName.slice(0, 1)}
+              {employee.lastName.slice(0, 1)}
+            </div>
+          )}
+
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <Link
+                href={`/employees/${employee.id}`}
+                className="truncate text-lg font-semibold text-slate-950 hover:text-emerald-700"
+              >
+                {employee.firstName} {employee.lastName}
+              </Link>
+              <span
+                className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-semibold ${badgeClass(
+                  status,
+                )}`}
+              >
+                <StatusIcon className="h-3.5 w-3.5" />
+                {statusLabel(status)}
+              </span>
+            </div>
+
+            <div className="mt-1 text-sm text-slate-600">{employee.jobTitle || "-"}</div>
+            <div className="mt-1 text-sm text-slate-500">
+              {employee.company || "-"} - {employee.agency || "-"}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3 xl:justify-end">
+          {employee.qrToken?.token ? (
+            <a
+              href={`/verify?token=${employee.qrToken.token}`}
+              className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            >
+              <QrCode className="h-4 w-4" />
+              Tester
+            </a>
+          ) : null}
+
           <Link
             href={`/employees/${employee.id}`}
-            className="text-2xl font-semibold hover:underline"
+            className="rounded-lg bg-slate-950 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
           >
-            {employee.firstName} {employee.lastName}
+            Ouvrir
           </Link>
-          <span
-            className={`px-3 py-1 rounded-full text-xs font-medium ${badgeClass(
-              employee.authorization?.status
-            )}`}
-          >
-            {statusLabel(employee.authorization?.status)}
-          </span>
+
+          {employee.qrImage ? (
+            <img
+              src={employee.qrImage}
+              alt="QR code"
+              className="h-20 w-20 rounded-lg border bg-white p-2"
+            />
+          ) : (
+            <div className="text-sm text-slate-400">Pas de QR</div>
+          )}
         </div>
-
-        <div className="text-slate-600">{employee.jobTitle || "-"}</div>
-        <div className="text-slate-600">
-          {employee.company || "-"} · {employee.agency || "-"}
-        </div>
-
-
-        {employee.qrToken?.token && (
-          <a
-            href={`/verify?token=${employee.qrToken.token}`}
-            className="inline-block text-sm underline"
-          >
-            Tester la vérification
-          </a>
-        )}
-      </div>
-
-      <div className="w-full lg:w-40 flex justify-center items-start">
-        {employee.qrImage ? (
-          <img
-            src={employee.qrImage}
-            alt="QR code"
-            className="w-32 h-32 rounded-xl border bg-white p-2"
-          />
-        ) : (
-          <div className="text-sm text-slate-400">Pas de QR code</div>
-        )}
       </div>
     </div>
   );
