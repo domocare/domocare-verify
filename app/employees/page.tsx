@@ -4,6 +4,7 @@ import { connection } from "next/server";
 import BackofficeShell from "@/components/backoffice-shell";
 import DatabaseErrorPanel from "@/components/database-error-panel";
 import EmployeeCard from "@/components/employee-card";
+import EmployeeExcelActions from "@/components/employee-excel-actions";
 import { prisma } from "@/lib/prisma";
 import { getVerifyUrl } from "@/lib/urls";
 
@@ -56,10 +57,14 @@ export default async function EmployeesPage() {
       }
     >
       {employeesWithQR ? (
-        <div className="grid gap-4">
-          {employeesWithQR.map((emp) => (
-            <EmployeeCard key={emp.id} employee={emp} />
-          ))}
+        <div className="grid gap-5">
+          <EmployeeExcelActions />
+
+          <div className="grid gap-4">
+            {employeesWithQR.map((emp) => (
+              <EmployeeCard key={emp.id} employee={emp} />
+            ))}
+          </div>
         </div>
       ) : (
         <DatabaseErrorPanel title="Collaborateurs indisponibles" />
