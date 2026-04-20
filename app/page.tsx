@@ -3,27 +3,60 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import BackofficeShell from "@/components/backoffice-shell";
 import DatabaseErrorPanel from "@/components/database-error-panel";
-import StatCard from "@/components/stat-card";
+import DashboardOverview from "./dashboard-overview";
 
-async function getDashboardStats() {
-  const [employees, active, expired, suspended, scans] = await Promise.all([
+async function getDashboardData() {
+  const [employees, active, expired, suspended, scans, employeeRows, scanRows] = await Promise.all([
     prisma.employee.count(),
     prisma.authorization.count({ where: { status: "active" } }),
     prisma.authorization.count({ where: { status: "expired" } }),
     prisma.authorization.count({ where: { status: { in: ["revoked", "suspended"] } } }),
     prisma.scanLog.count(),
+    prisma.employee.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 80,
+      include: {
+        authorization: true,
+        qrToken: true,
+      },
+    }),
+    prisma.scanLog.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 8,
+    }),
   ]);
 
-  return { employees, active, expired, suspended, scans };
+  return {
+    stats: { employees, active, expired, suspended, scans },
+    employees: employeeRows.map((employee) => ({
+      id: employee.id,
+      firstName: employee.firstName,
+      lastName: employee.lastName,
+      jobTitle: employee.jobTitle,
+      agency: employee.agency,
+      company: employee.company,
+      photoUrl: employee.photoUrl,
+      createdAt: employee.createdAt.toISOString(),
+      status: employee.authorization?.status || null,
+      token: employee.qrToken?.token || null,
+    })),
+    scans: scanRows.map((scan) => ({
+      id: scan.id,
+      token: scan.token,
+      result: scan.result,
+      company: scan.company,
+      createdAt: scan.createdAt.toISOString(),
+    })),
+  };
 }
 
 export default async function DashboardPage() {
   await connection();
 
-  let stats: Awaited<ReturnType<typeof getDashboardStats>> | null = null;
+  let dashboardData: Awaited<ReturnType<typeof getDashboardData>> | null = null;
 
   try {
-    stats = await getDashboardStats();
+    dashboardData = await getDashboardData();
   } catch (error) {
     console.error("Dashboard database error", error);
   }
@@ -38,7 +71,7 @@ export default async function DashboardPage() {
             href="/employees"
             className="rounded-2xl px-4 py-2 border bg-black text-white"
           >
-            Vue collaborateurs
+            Rechercher
           </Link>
           <Link
             href="/employees/new"
@@ -49,70 +82,15 @@ export default async function DashboardPage() {
         </>
       }
     >
-      {stats ? (
-        <div className="grid md:grid-cols-2 xl:grid-cols-5 gap-4">
-          <StatCard title="Collaborateurs" value={stats.employees} subtitle="Toutes entites" />
-          <StatCard title="Actifs" value={stats.active} subtitle="Habilitations valides" />
-          <StatCard title="Expires" value={stats.expired} subtitle="A renouveler" />
-          <StatCard title="Suspendus" value={stats.suspended} subtitle="Non autorises" />
-          <StatCard title="Scans" value={stats.scans} subtitle="Historique total" />
-        </div>
+      {dashboardData ? (
+        <DashboardOverview
+          stats={dashboardData.stats}
+          employees={dashboardData.employees}
+          scans={dashboardData.scans}
+        />
       ) : (
         <DatabaseErrorPanel />
       )}
-
-      <div className="grid lg:grid-cols-2 gap-6">
-        <div className="rounded-3xl bg-white shadow-sm border p-6">
-          <h2 className="text-xl font-semibold mb-4">Acces rapides</h2>
-          <div className="grid sm:grid-cols-2 gap-4">
-            <Link
-              href="/employees"
-              className="rounded-2xl border p-4 hover:bg-slate-50"
-            >
-              <div className="font-medium">Collaborateurs</div>
-              <div className="text-sm text-slate-500 mt-1">
-                Voir les fiches, statuts et QR codes
-              </div>
-            </Link>
-
-            <Link
-              href="/employees/new"
-              className="rounded-2xl border p-4 hover:bg-slate-50"
-            >
-              <div className="font-medium">Ajouter</div>
-              <div className="text-sm text-slate-500 mt-1">
-                Creer un nouvel intervenant
-              </div>
-            </Link>
-
-            <Link
-              href="/scans"
-              className="rounded-2xl border p-4 hover:bg-slate-50"
-            >
-              <div className="font-medium">Scans</div>
-              <div className="text-sm text-slate-500 mt-1">
-                Historique des verifications
-              </div>
-            </Link>
-          </div>
-        </div>
-
-        <div className="rounded-3xl bg-white shadow-sm border p-6">
-          <h2 className="text-xl font-semibold mb-4">Lecture metier</h2>
-          <div className="space-y-3 text-sm text-slate-600">
-            <p>
-              Cet outil permet de rassurer le client final, de securiser les acces
-              aux interventions, et de standardiser les pratiques a l echelle
-              Domocare.
-            </p>
-            <p>
-              La valeur groupe vient de la tracabilite, de la maitrise des
-              habilitations et de la capacite a deployer un meme standard sur
-              plusieurs agences.
-            </p>
-          </div>
-        </div>
-      </div>
     </BackofficeShell>
   );
 }
