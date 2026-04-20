@@ -29,6 +29,7 @@ export default function BackofficeShell({
           <Link href="/employees">Collaborateurs</Link>
           <Link href="/employees/new">Ajouter</Link>
           <Link href="/scans">Scans</Link>
+          <Link href="/users">Utilisateurs</Link>
           <Link href="/settings">Parametrage</Link>
         </div>
 

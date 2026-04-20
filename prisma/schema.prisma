@@ -38,6 +38,19 @@ model Agency {
   updatedAt DateTime @updatedAt
 }
 
+model AppUser {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  firstName String
+  lastName  String
+  role      String
+  company   String?
+  agency    String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Authorization {
   id         String   @id @default(cuid())
   employeeId String   @unique
