@@ -59,15 +59,24 @@ function VerifyCard({
   state,
   message,
   company,
+  companyLogoUrl,
   children,
 }: {
   state: VerifyState;
   message?: string;
   company?: string | null;
+  companyLogoUrl?: string | null;
   children?: React.ReactNode;
 }) {
   const meta = getStateMeta(state);
-  const brand = getCompanyBrand(company);
+  const fallbackBrand = getCompanyBrand(company);
+  const brand = companyLogoUrl
+    ? {
+        ...fallbackBrand,
+        name: company || fallbackBrand.name,
+        logo: companyLogoUrl,
+      }
+    : fallbackBrand;
 
   return (
     <main className="min-h-screen bg-slate-100 px-4 py-5 text-slate-900 sm:py-8">
@@ -198,11 +207,15 @@ export default async function VerifyPage({
   if (isRevoked || isExpired) {
     const result = isRevoked ? "suspended" : "expired";
     await logScan({ token, result, company: employee.company });
+    const companyRecord = employee.company
+      ? await prisma.company.findUnique({ where: { name: employee.company } })
+      : null;
 
     return (
       <VerifyCard
         state={isRevoked ? "suspended" : "expired"}
         company={employee.company}
+        companyLogoUrl={companyRecord?.logoUrl}
       >
         <PublicEmployeeSummary token={token} employee={employee} state={isRevoked ? "suspended" : "expired"} />
       </VerifyCard>
@@ -210,9 +223,12 @@ export default async function VerifyPage({
   }
 
   await logScan({ token, result: "valid", company: employee.company });
+  const companyRecord = employee.company
+    ? await prisma.company.findUnique({ where: { name: employee.company } })
+    : null;
 
   return (
-    <VerifyCard state="valid" company={employee.company}>
+    <VerifyCard state="valid" company={employee.company} companyLogoUrl={companyRecord?.logoUrl}>
       <PublicEmployeeSummary token={token} employee={employee} state="valid" />
     </VerifyCard>
   );

@@ -1,5 +1,21 @@
 import { prisma } from "@/lib/prisma";
 
+function readText(value: unknown) {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function readLogo(value: unknown) {
+  const logoUrl = readText(value);
+
+  if (!logoUrl) return null;
+  if (logoUrl.length > 2_100_000) return "__INVALID__";
+  if (logoUrl.startsWith("data:image/") || logoUrl.startsWith("https://") || logoUrl.startsWith("http://")) {
+    return logoUrl;
+  }
+
+  return "__INVALID__";
+}
+
 export async function GET() {
   const companies = await prisma.company.findMany({
     orderBy: {
@@ -13,15 +29,29 @@ export async function GET() {
 export async function POST(req: Request) {
   const body = await req.json();
   const name = typeof body.name === "string" ? body.name.trim() : "";
+  const logoUrl = readLogo(body.logoUrl);
 
-  if (!name) {
+  if (!name || logoUrl === "__INVALID__") {
     return Response.json({ ok: false }, { status: 400 });
   }
 
   const company = await prisma.company.upsert({
     where: { name },
-    create: { name },
-    update: {},
+    create: {
+      name,
+      logoUrl,
+      address: readText(body.address),
+      phone: readText(body.phone),
+      email: readText(body.email),
+      director: readText(body.director),
+    },
+    update: {
+      logoUrl,
+      address: readText(body.address),
+      phone: readText(body.phone),
+      email: readText(body.email),
+      director: readText(body.director),
+    },
   });
 
   return Response.json({ ok: true, company });
@@ -31,8 +61,9 @@ export async function PATCH(req: Request) {
   const body = await req.json();
   const id = typeof body.id === "string" ? body.id : "";
   const name = typeof body.name === "string" ? body.name.trim() : "";
+  const logoUrl = readLogo(body.logoUrl);
 
-  if (!id || !name) {
+  if (!id || !name || logoUrl === "__INVALID__") {
     return Response.json({ ok: false, message: "Champs manquants." }, { status: 400 });
   }
 
@@ -51,7 +82,14 @@ export async function PATCH(req: Request) {
   const [company] = await prisma.$transaction([
     prisma.company.update({
       where: { id },
-      data: { name },
+      data: {
+        name,
+        logoUrl,
+        address: readText(body.address),
+        phone: readText(body.phone),
+        email: readText(body.email),
+        director: readText(body.director),
+      },
     }),
     prisma.employee.updateMany({
       where: { company: existing.name },

@@ -1,5 +1,9 @@
 import { prisma } from "@/lib/prisma";
 
+function readText(value: unknown) {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
 export async function GET() {
   const agencies = await prisma.agency.findMany({
     orderBy: [{ company: { name: "asc" } }, { name: "asc" }],
@@ -28,8 +32,21 @@ export async function POST(req: Request) {
 
   const agency = await prisma.agency.upsert({
     where: { name },
-    create: { name, companyId },
-    update: { companyId },
+    create: {
+      name,
+      companyId,
+      address: readText(body.address),
+      phone: readText(body.phone),
+      email: readText(body.email),
+      director: readText(body.director),
+    },
+    update: {
+      companyId,
+      address: readText(body.address),
+      phone: readText(body.phone),
+      email: readText(body.email),
+      director: readText(body.director),
+    },
   });
 
   return Response.json({ ok: true, agency });
@@ -66,7 +83,14 @@ export async function PATCH(req: Request) {
   const [agency] = await prisma.$transaction([
     prisma.agency.update({
       where: { id },
-      data: { name, companyId },
+      data: {
+        name,
+        companyId,
+        address: readText(body.address),
+        phone: readText(body.phone),
+        email: readText(body.email),
+        director: readText(body.director),
+      },
     }),
     prisma.employee.updateMany({
       where: { agency: existing.name },

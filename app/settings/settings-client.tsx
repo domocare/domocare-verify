@@ -2,33 +2,78 @@
 
 import { useEffect, useState } from "react";
 
-type SettingItem = {
+const MAX_LOGO_SIZE = 1_500_000;
+
+type CompanyItem = {
   id: string;
   name: string;
+  logoUrl: string | null;
+  address: string | null;
+  phone: string | null;
+  email: string | null;
+  director: string | null;
 };
 
-type AgencyItem = SettingItem & {
+type AgencyItem = {
+  id: string;
+  name: string;
   companyId: string | null;
-  company?: SettingItem | null;
+  company?: CompanyItem | null;
+  address: string | null;
+  phone: string | null;
+  email: string | null;
+  director: string | null;
+};
+
+type CompanyForm = {
+  name: string;
+  logoUrl: string;
+  address: string;
+  phone: string;
+  email: string;
+  director: string;
+};
+
+type AgencyForm = {
+  name: string;
+  companyId: string;
+  address: string;
+  phone: string;
+  email: string;
+  director: string;
 };
 
 type OptionsResponse = {
-  companies: SettingItem[];
+  companies: CompanyItem[];
   agencies: AgencyItem[];
 };
 
+const emptyCompanyForm: CompanyForm = {
+  name: "",
+  logoUrl: "",
+  address: "",
+  phone: "",
+  email: "",
+  director: "",
+};
+
+const emptyAgencyForm: AgencyForm = {
+  name: "",
+  companyId: "",
+  address: "",
+  phone: "",
+  email: "",
+  director: "",
+};
+
 export default function SettingsClient() {
-  const [companies, setCompanies] = useState<SettingItem[]>([]);
+  const [companies, setCompanies] = useState<CompanyItem[]>([]);
   const [agencies, setAgencies] = useState<AgencyItem[]>([]);
-  const [companyName, setCompanyName] = useState("");
-  const [agencyName, setAgencyName] = useState("");
-  const [agencyCompanyId, setAgencyCompanyId] = useState("");
+  const [companyForm, setCompanyForm] = useState<CompanyForm>(emptyCompanyForm);
+  const [agencyForm, setAgencyForm] = useState<AgencyForm>(emptyAgencyForm);
   const [message, setMessage] = useState<string | null>(null);
-  const [editingCompany, setEditingCompany] = useState<SettingItem | null>(null);
-  const [editingAgency, setEditingAgency] = useState<AgencyItem | null>(null);
-  const [companyEditName, setCompanyEditName] = useState("");
-  const [agencyEditName, setAgencyEditName] = useState("");
-  const [agencyEditCompanyId, setAgencyEditCompanyId] = useState("");
+  const [editingCompanyId, setEditingCompanyId] = useState<string | null>(null);
+  const [editingAgencyId, setEditingAgencyId] = useState<string | null>(null);
 
   async function loadOptions() {
     const res = await fetch("/api/settings/options");
@@ -44,71 +89,30 @@ export default function SettingsClient() {
   }
 
   useEffect(() => {
-    let isMounted = true;
+    let ignore = false;
 
-    async function loadInitialOptions() {
-      const res = await fetch("/api/settings/options");
+    fetch("/api/settings/options")
+      .then(async (res) => {
+        if (!res.ok) {
+          throw new Error("settings-load-failed");
+        }
 
-      if (!isMounted) return;
-
-      if (!res.ok) {
+        return (await res.json()) as OptionsResponse;
+      })
+      .then((data) => {
+        if (ignore) return;
+        setCompanies(data.companies);
+        setAgencies(data.agencies);
+      })
+      .catch(() => {
+        if (ignore) return;
         setMessage("Impossible de charger le parametrage.");
-        return;
-      }
-
-      const data = (await res.json()) as OptionsResponse;
-
-      if (!isMounted) return;
-
-      setCompanies(data.companies);
-      setAgencies(data.agencies);
-    }
-
-    void loadInitialOptions();
+      });
 
     return () => {
-      isMounted = false;
+      ignore = true;
     };
   }, []);
-
-  async function addCompany(e: React.FormEvent) {
-    e.preventDefault();
-    setMessage(null);
-
-    const res = await fetch("/api/settings/companies", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: companyName }),
-    });
-
-    if (!res.ok) {
-      setMessage("La societe n'a pas pu etre ajoutee.");
-      return;
-    }
-
-    setCompanyName("");
-    await loadOptions();
-  }
-
-  async function addAgency(e: React.FormEvent) {
-    e.preventDefault();
-    setMessage(null);
-
-    const res = await fetch("/api/settings/agencies", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: agencyName, companyId: agencyCompanyId }),
-    });
-
-    if (!res.ok) {
-      setMessage("L'agence n'a pas pu etre ajoutee.");
-      return;
-    }
-
-    setAgencyName("");
-    setAgencyCompanyId("");
-    await loadOptions();
-  }
 
   async function readError(res: Response, fallback: string) {
     try {
@@ -119,56 +123,73 @@ export default function SettingsClient() {
     }
   }
 
-  async function updateCompany(e: React.FormEvent) {
-    e.preventDefault();
-    if (!editingCompany) return;
+  async function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
+    if (!file.type.startsWith("image/")) {
+      setMessage("Le logo doit etre une image.");
+      e.target.value = "";
+      return;
+    }
+
+    if (file.size > MAX_LOGO_SIZE) {
+      setMessage("Le logo doit faire moins de 1,5 Mo.");
+      e.target.value = "";
+      return;
+    }
+
+    const logoUrl = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(file);
+    });
+
+    setCompanyForm((current) => ({ ...current, logoUrl }));
+  }
+
+  async function saveCompany(e: React.FormEvent) {
+    e.preventDefault();
     setMessage(null);
 
     const res = await fetch("/api/settings/companies", {
-      method: "PATCH",
+      method: editingCompanyId ? "PATCH" : "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: editingCompany.id, name: companyEditName }),
+      body: JSON.stringify({ id: editingCompanyId, ...companyForm }),
     });
 
     if (!res.ok) {
-      setMessage(await readError(res, "La societe n'a pas pu etre modifiee."));
+      setMessage(await readError(res, "La societe n'a pas pu etre enregistree."));
       return;
     }
 
-    setEditingCompany(null);
-    setCompanyEditName("");
+    setCompanyForm(emptyCompanyForm);
+    setEditingCompanyId(null);
     await loadOptions();
   }
 
-  async function updateAgency(e: React.FormEvent) {
+  async function saveAgency(e: React.FormEvent) {
     e.preventDefault();
-    if (!editingAgency) return;
-
     setMessage(null);
 
     const res = await fetch("/api/settings/agencies", {
-      method: "PATCH",
+      method: editingAgencyId ? "PATCH" : "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        id: editingAgency.id,
-        name: agencyEditName,
-        companyId: agencyEditCompanyId,
-      }),
+      body: JSON.stringify({ id: editingAgencyId, ...agencyForm }),
     });
 
     if (!res.ok) {
-      setMessage(await readError(res, "L'agence n'a pas pu etre modifiee."));
+      setMessage(await readError(res, "L'agence n'a pas pu etre enregistree."));
       return;
     }
 
-    setEditingAgency(null);
-    setAgencyEditName("");
-    setAgencyEditCompanyId("");
+    setAgencyForm(emptyAgencyForm);
+    setEditingAgencyId(null);
     await loadOptions();
   }
 
-  async function deleteCompany(company: SettingItem) {
+  async function deleteCompany(company: CompanyItem) {
     if (!window.confirm(`Supprimer la societe "${company.name}" ?`)) return;
 
     setMessage(null);
@@ -187,7 +208,7 @@ export default function SettingsClient() {
     await loadOptions();
   }
 
-  async function deleteAgency(agency: SettingItem) {
+  async function deleteAgency(agency: AgencyItem) {
     if (!window.confirm(`Supprimer l'agence "${agency.name}" ?`)) return;
 
     setMessage(null);
@@ -206,120 +227,233 @@ export default function SettingsClient() {
     await loadOptions();
   }
 
+  function editCompany(company: CompanyItem) {
+    setEditingCompanyId(company.id);
+    setCompanyForm({
+      name: company.name,
+      logoUrl: company.logoUrl || "",
+      address: company.address || "",
+      phone: company.phone || "",
+      email: company.email || "",
+      director: company.director || "",
+    });
+  }
+
+  function editAgency(agency: AgencyItem) {
+    setEditingAgencyId(agency.id);
+    setAgencyForm({
+      name: agency.name,
+      companyId: agency.companyId || "",
+      address: agency.address || "",
+      phone: agency.phone || "",
+      email: agency.email || "",
+      director: agency.director || "",
+    });
+  }
+
   return (
-    <div className="grid gap-5 lg:grid-cols-2">
-      <section className="rounded-lg border bg-white p-5 shadow-sm">
-        <h2 className="text-xl font-semibold">Societes</h2>
-
-        <form onSubmit={addCompany} className="mt-4 flex flex-col gap-3 sm:flex-row">
-          <input
-            value={companyName}
-            onChange={(e) => setCompanyName(e.target.value)}
-            className="min-w-0 flex-1 rounded-lg border px-4 py-3"
-            placeholder="Nom de la societe"
-            required
-          />
-          <button
-            type="submit"
-            className="rounded-lg bg-black px-4 py-3 text-sm font-semibold text-white"
-          >
-            Ajouter
-          </button>
-        </form>
-
-        <div className="mt-5 space-y-2">
-          {companies.length === 0 ? (
-            <p className="text-sm text-slate-500">Aucune societe parametree.</p>
-          ) : (
-            companies.map((company) => (
-              <SettingRow
-                key={company.id}
-                item={company}
-                editingItem={editingCompany}
-                editName={companyEditName}
-                setEditName={setCompanyEditName}
-                startEdit={() => {
-                  setEditingCompany(company);
-                  setCompanyEditName(company.name);
+    <div className="space-y-5">
+      <div className="grid gap-5 xl:grid-cols-2">
+        <section className="rounded-lg border bg-white p-5 shadow-sm">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-semibold">Societe</h2>
+              <p className="mt-1 text-sm text-slate-500">Identite, logo et coordonnees groupe.</p>
+            </div>
+            {editingCompanyId ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingCompanyId(null);
+                  setCompanyForm(emptyCompanyForm);
                 }}
-                cancelEdit={() => {
-                  setEditingCompany(null);
-                  setCompanyEditName("");
-                }}
-                onSubmit={updateCompany}
-                onDelete={() => deleteCompany(company)}
+                className="rounded-lg border px-3 py-2 text-sm font-semibold"
+              >
+                Annuler
+              </button>
+            ) : null}
+          </div>
+
+          <form onSubmit={saveCompany} className="mt-4 grid gap-3">
+            <input
+              value={companyForm.name}
+              onChange={(e) => setCompanyForm({ ...companyForm, name: e.target.value })}
+              className="rounded-lg border px-4 py-3"
+              placeholder="Nom de la societe"
+              required
+            />
+
+            <div className="grid gap-3 sm:grid-cols-[140px_1fr]">
+              <div className="flex h-28 items-center justify-center rounded-lg border bg-slate-50 p-3">
+                {companyForm.logoUrl ? (
+                  <img src={companyForm.logoUrl} alt="Logo societe" className="max-h-20 w-auto object-contain" />
+                ) : (
+                  <span className="text-sm text-slate-400">Logo</span>
+                )}
+              </div>
+              <div className="space-y-2">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoChange}
+                  className="w-full rounded-lg border px-4 py-3"
+                />
+                {companyForm.logoUrl ? (
+                  <button
+                    type="button"
+                    onClick={() => setCompanyForm({ ...companyForm, logoUrl: "" })}
+                    className="text-sm font-semibold text-red-700 underline"
+                  >
+                    Retirer le logo
+                  </button>
+                ) : null}
+              </div>
+            </div>
+
+            <textarea
+              value={companyForm.address}
+              onChange={(e) => setCompanyForm({ ...companyForm, address: e.target.value })}
+              className="min-h-24 rounded-lg border px-4 py-3"
+              placeholder="Adresse de la societe"
+            />
+
+            <div className="grid gap-3 sm:grid-cols-3">
+              <input
+                value={companyForm.phone}
+                onChange={(e) => setCompanyForm({ ...companyForm, phone: e.target.value })}
+                className="rounded-lg border px-4 py-3"
+                placeholder="Telephone"
               />
-            ))
-          )}
-        </div>
-      </section>
-
-      <section className="rounded-lg border bg-white p-5 shadow-sm">
-        <h2 className="text-xl font-semibold">Agences</h2>
-
-        <form onSubmit={addAgency} className="mt-4 grid gap-3">
-          <input
-            value={agencyName}
-            onChange={(e) => setAgencyName(e.target.value)}
-            className="min-w-0 flex-1 rounded-lg border px-4 py-3"
-            placeholder="Nom de l'agence"
-            required
-          />
-          <select
-            value={agencyCompanyId}
-            onChange={(e) => setAgencyCompanyId(e.target.value)}
-            className="min-w-0 flex-1 rounded-lg border px-4 py-3"
-            required
-          >
-            <option value="">Rattacher a une societe</option>
-            {companies.map((company) => (
-              <option key={company.id} value={company.id}>
-                {company.name}
-              </option>
-            ))}
-          </select>
-          <button
-            type="submit"
-            className="rounded-lg bg-black px-4 py-3 text-sm font-semibold text-white"
-          >
-            Ajouter
-          </button>
-        </form>
-
-        <div className="mt-5 space-y-2">
-          {agencies.length === 0 ? (
-            <p className="text-sm text-slate-500">Aucune agence parametree.</p>
-          ) : (
-            agencies.map((agency) => (
-              <SettingRow
-                key={agency.id}
-                item={agency}
-                editingItem={editingAgency}
-                editName={agencyEditName}
-                setEditName={setAgencyEditName}
-                companies={companies}
-                editCompanyId={agencyEditCompanyId}
-                setEditCompanyId={setAgencyEditCompanyId}
-                startEdit={() => {
-                  setEditingAgency(agency);
-                  setAgencyEditName(agency.name);
-                  setAgencyEditCompanyId(agency.companyId || "");
-                }}
-                cancelEdit={() => {
-                  setEditingAgency(null);
-                  setAgencyEditName("");
-                  setAgencyEditCompanyId("");
-                }}
-                onSubmit={updateAgency}
-                onDelete={() => deleteAgency(agency)}
+              <input
+                type="email"
+                value={companyForm.email}
+                onChange={(e) => setCompanyForm({ ...companyForm, email: e.target.value })}
+                className="rounded-lg border px-4 py-3"
+                placeholder="Email"
               />
-            ))
-          )}
-        </div>
-      </section>
+              <input
+                value={companyForm.director}
+                onChange={(e) => setCompanyForm({ ...companyForm, director: e.target.value })}
+                className="rounded-lg border px-4 py-3"
+                placeholder="Directeur / responsable"
+              />
+            </div>
+
+            <button type="submit" className="rounded-lg bg-black px-4 py-3 text-sm font-semibold text-white">
+              {editingCompanyId ? "Enregistrer la societe" : "Ajouter la societe"}
+            </button>
+          </form>
+        </section>
+
+        <section className="rounded-lg border bg-white p-5 shadow-sm">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-semibold">Agence / site</h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Rattachement a une societe et coordonnees utilisees par defaut.
+              </p>
+            </div>
+            {editingAgencyId ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingAgencyId(null);
+                  setAgencyForm(emptyAgencyForm);
+                }}
+                className="rounded-lg border px-3 py-2 text-sm font-semibold"
+              >
+                Annuler
+              </button>
+            ) : null}
+          </div>
+
+          <form onSubmit={saveAgency} className="mt-4 grid gap-3">
+            <input
+              value={agencyForm.name}
+              onChange={(e) => setAgencyForm({ ...agencyForm, name: e.target.value })}
+              className="rounded-lg border px-4 py-3"
+              placeholder="Nom de l'agence ou du site"
+              required
+            />
+            <select
+              value={agencyForm.companyId}
+              onChange={(e) => setAgencyForm({ ...agencyForm, companyId: e.target.value })}
+              className="rounded-lg border px-4 py-3"
+              required
+            >
+              <option value="">Rattacher a une societe</option>
+              {companies.map((company) => (
+                <option key={company.id} value={company.id}>
+                  {company.name}
+                </option>
+              ))}
+            </select>
+            <textarea
+              value={agencyForm.address}
+              onChange={(e) => setAgencyForm({ ...agencyForm, address: e.target.value })}
+              className="min-h-24 rounded-lg border px-4 py-3"
+              placeholder="Adresse de l'agence ou du site"
+            />
+            <div className="grid gap-3 sm:grid-cols-3">
+              <input
+                value={agencyForm.phone}
+                onChange={(e) => setAgencyForm({ ...agencyForm, phone: e.target.value })}
+                className="rounded-lg border px-4 py-3"
+                placeholder="Telephone agence"
+              />
+              <input
+                type="email"
+                value={agencyForm.email}
+                onChange={(e) => setAgencyForm({ ...agencyForm, email: e.target.value })}
+                className="rounded-lg border px-4 py-3"
+                placeholder="Email agence"
+              />
+              <input
+                value={agencyForm.director}
+                onChange={(e) => setAgencyForm({ ...agencyForm, director: e.target.value })}
+                className="rounded-lg border px-4 py-3"
+                placeholder="Directeur / responsable"
+              />
+            </div>
+            <button type="submit" className="rounded-lg bg-black px-4 py-3 text-sm font-semibold text-white">
+              {editingAgencyId ? "Enregistrer l'agence" : "Ajouter l'agence"}
+            </button>
+          </form>
+        </section>
+      </div>
+
+      <div className="grid gap-5 xl:grid-cols-2">
+        <ReferenceList
+          title="Societes enregistrees"
+          emptyLabel="Aucune societe parametree."
+          items={companies}
+          renderMeta={(company) => [company.director, company.phone, company.email].filter(Boolean).join(" - ")}
+          renderLogo={(company) => company.logoUrl}
+          onEdit={editCompany}
+          onDelete={deleteCompany}
+        />
+
+        <ReferenceList
+          title="Agences / sites enregistres"
+          emptyLabel="Aucune agence parametree."
+          items={agencies}
+          renderMeta={(agency) =>
+            [
+              agency.company?.name || "Aucune societe rattachee",
+              agency.director,
+              agency.phone,
+              agency.email,
+            ]
+              .filter(Boolean)
+              .join(" - ")
+          }
+          onEdit={editAgency}
+          onDelete={deleteAgency}
+        />
+      </div>
 
       {message ? (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 lg:col-span-2">
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
           {message}
         </div>
       ) : null}
@@ -327,102 +461,70 @@ export default function SettingsClient() {
   );
 }
 
-function SettingRow({
-  item,
-  editingItem,
-  editName,
-  setEditName,
-  companies,
-  editCompanyId,
-  setEditCompanyId,
-  startEdit,
-  cancelEdit,
-  onSubmit,
+function ReferenceList<T extends { id: string; name: string }>({
+  title,
+  emptyLabel,
+  items,
+  renderMeta,
+  renderLogo,
+  onEdit,
   onDelete,
 }: {
-  item: SettingItem | AgencyItem;
-  editingItem: SettingItem | AgencyItem | null;
-  editName: string;
-  setEditName: (value: string) => void;
-  companies?: SettingItem[];
-  editCompanyId?: string;
-  setEditCompanyId?: (value: string) => void;
-  startEdit: () => void;
-  cancelEdit: () => void;
-  onSubmit: (e: React.FormEvent) => void;
-  onDelete: () => void;
+  title: string;
+  emptyLabel: string;
+  items: T[];
+  renderMeta: (item: T) => string;
+  renderLogo?: (item: T) => string | null;
+  onEdit: (item: T) => void;
+  onDelete: (item: T) => void;
 }) {
-  const isEditing = editingItem?.id === item.id;
-
-  if (isEditing) {
-    return (
-      <form onSubmit={onSubmit} className="rounded-lg border border-emerald-200 bg-emerald-50 p-3">
-        <div className="grid gap-2 sm:grid-cols-[1fr_1fr_auto_auto]">
-          <input
-            value={editName}
-            onChange={(e) => setEditName(e.target.value)}
-            className="min-w-0 flex-1 rounded-lg border bg-white px-4 py-2"
-            required
-          />
-          {companies && setEditCompanyId ? (
-            <select
-              value={editCompanyId || ""}
-              onChange={(e) => setEditCompanyId(e.target.value)}
-              className="min-w-0 flex-1 rounded-lg border bg-white px-4 py-2"
-              required
-            >
-              <option value="">Societe</option>
-              {companies.map((company) => (
-                <option key={company.id} value={company.id}>
-                  {company.name}
-                </option>
-              ))}
-            </select>
-          ) : null}
-          <button
-            type="submit"
-            className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white"
-          >
-            Enregistrer
-          </button>
-          <button
-            type="button"
-            onClick={cancelEdit}
-            className="rounded-lg border bg-white px-4 py-2 text-sm font-semibold text-slate-700"
-          >
-            Annuler
-          </button>
-        </div>
-      </form>
-    );
-  }
-
   return (
-    <div className="flex flex-col gap-3 rounded-lg bg-slate-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <span className="font-medium text-slate-900">{item.name}</span>
-        {"company" in item ? (
-          <p className="mt-1 text-xs font-medium text-slate-500">
-            {item.company?.name || "Aucune societe rattachee"}
-          </p>
-        ) : null}
+    <section className="rounded-lg border bg-white p-5 shadow-sm">
+      <h2 className="text-xl font-semibold">{title}</h2>
+      <div className="mt-5 space-y-3">
+        {items.length === 0 ? (
+          <p className="text-sm text-slate-500">{emptyLabel}</p>
+        ) : (
+          items.map((item) => {
+            const logo = renderLogo?.(item);
+
+            return (
+              <div
+                key={item.id}
+                className="flex flex-col gap-3 rounded-lg bg-slate-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div className="flex items-center gap-3">
+                  {logo ? (
+                    <div className="flex h-14 w-20 items-center justify-center rounded-lg border bg-white p-2">
+                      <img src={logo} alt={`Logo ${item.name}`} className="max-h-10 w-auto object-contain" />
+                    </div>
+                  ) : null}
+                  <div>
+                    <p className="font-semibold text-slate-900">{item.name}</p>
+                    <p className="mt-1 text-xs font-medium text-slate-500">{renderMeta(item) || "-"}</p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => onEdit(item)}
+                    className="rounded-lg border bg-white px-3 py-2 text-sm font-semibold text-slate-700"
+                  >
+                    Modifier
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onDelete(item)}
+                    className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700"
+                  >
+                    Supprimer
+                  </button>
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
-      <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={startEdit}
-          className="rounded-lg border bg-white px-3 py-2 text-sm font-semibold text-slate-700"
-        >
-          Modifier
-        </button>
-        <button
-          type="button"
-          onClick={onDelete}
-          className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700"
-        >
-          Supprimer
-        </button>
-      </div>
-    </div>
+    </section>
   );
 }

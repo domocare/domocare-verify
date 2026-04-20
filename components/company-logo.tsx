@@ -25,6 +25,7 @@ export default function CompanyLogo({
         height={80}
         className="max-h-12 w-auto object-contain"
         preload={preload}
+        unoptimized
       />
     </div>
   );

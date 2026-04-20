@@ -10,13 +10,25 @@ type SettingItem = {
   name: string;
 };
 
+type CompanyItem = SettingItem & {
+  logoUrl?: string | null;
+  address?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  director?: string | null;
+};
+
 type AgencyItem = SettingItem & {
   companyId: string | null;
   company?: SettingItem | null;
+  address?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  director?: string | null;
 };
 
 type OptionsResponse = {
-  companies: SettingItem[];
+  companies: CompanyItem[];
   agencies: AgencyItem[];
 };
 
@@ -36,7 +48,7 @@ export default function NewEmployeePage() {
     expiresAt: "",
   });
   const [photoError, setPhotoError] = useState<string | null>(null);
-  const [companies, setCompanies] = useState<SettingItem[]>([]);
+  const [companies, setCompanies] = useState<CompanyItem[]>([]);
   const [agencies, setAgencies] = useState<AgencyItem[]>([]);
   const [settingsError, setSettingsError] = useState<string | null>(null);
 
@@ -111,6 +123,7 @@ export default function NewEmployeePage() {
   const filteredAgencies = selectedCompany
     ? agencies.filter((agency) => agency.companyId === selectedCompany.id)
     : [];
+  const selectedAgency = agencies.find((agency) => agency.name === form.agency);
 
   return (
     <BackofficeShell
@@ -186,7 +199,14 @@ export default function NewEmployeePage() {
               <select
                 className="w-full border rounded-xl p-3"
                 value={form.agency}
-                onChange={(e) => setForm({ ...form, agency: e.target.value })}
+                onChange={(e) => {
+                  const agency = agencies.find((item) => item.name === e.target.value);
+                  setForm({
+                    ...form,
+                    agency: e.target.value,
+                    phoneAgency: agency?.phone || form.phoneAgency,
+                  });
+                }}
                 disabled={!form.company}
               >
                 <option value="">
@@ -233,6 +253,11 @@ export default function NewEmployeePage() {
             value={form.phoneAgency}
             onChange={(e) => setForm({ ...form, phoneAgency: e.target.value })}
           />
+          {selectedAgency?.phone ? (
+            <p className="text-sm text-slate-500">
+              Telephone repris depuis l&apos;agence : {selectedAgency.phone}
+            </p>
+          ) : null}
 
           <div className="grid gap-4 md:grid-cols-3">
             <input
