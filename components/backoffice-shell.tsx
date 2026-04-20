@@ -32,6 +32,7 @@ export default function BackofficeShell({
 }: Props) {
   const navItems = [
     { href: "/", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/analytics", label: "Pilotage", icon: BarChart3 },
     { href: "/employees", label: "Collaborateurs", icon: Users },
     { href: "/employees/new", label: "Ajouter", icon: Plus },
     { href: "/scans", label: "Scans", icon: FileClock },
