@@ -11,6 +11,7 @@ type AppUser = {
   company: string | null;
   agency: string | null;
   isActive: boolean;
+  mfaEnabled: boolean;
 };
 
 type SettingItem = {
@@ -50,6 +51,9 @@ export default function UsersClient() {
     role: "AGENCY_ADMIN",
     company: "",
     agency: "",
+    password: "",
+    mfaEnabled: false,
+    mfaCode: "",
   });
 
   async function loadUsers() {
@@ -119,6 +123,9 @@ export default function UsersClient() {
       role: "AGENCY_ADMIN",
       company: "",
       agency: "",
+      password: "",
+      mfaEnabled: false,
+      mfaCode: "",
     });
     await loadUsers();
   }
@@ -170,6 +177,16 @@ export default function UsersClient() {
             required
           />
 
+          <input
+            type="password"
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+            className="rounded-lg border px-4 py-3"
+            placeholder="Mot de passe initial"
+            minLength={10}
+            required
+          />
+
           <select
             value={form.role}
             onChange={(e) => setForm({ ...form, role: e.target.value })}
@@ -208,6 +225,26 @@ export default function UsersClient() {
             ))}
           </select>
 
+          <label className="flex items-center gap-2 rounded-lg border px-4 py-3 text-sm">
+            <input
+              type="checkbox"
+              checked={form.mfaEnabled}
+              onChange={(e) => setForm({ ...form, mfaEnabled: e.target.checked })}
+            />
+            MFA administrateur
+          </label>
+
+          {form.mfaEnabled ? (
+            <input
+              value={form.mfaCode}
+              onChange={(e) => setForm({ ...form, mfaCode: e.target.value })}
+              className="rounded-lg border px-4 py-3"
+              placeholder="Code MFA a 6 chiffres minimum"
+              minLength={6}
+              required
+            />
+          ) : null}
+
           <button
             type="submit"
             className="rounded-lg bg-black px-4 py-3 text-sm font-semibold text-white"
@@ -236,7 +273,7 @@ export default function UsersClient() {
                   <div className="text-sm text-slate-600">{user.email}</div>
                   <div className="mt-1 text-sm text-slate-500">
                     {roleLabel(user.role)} - {user.company || "Toutes societes"} /{" "}
-                    {user.agency || "Toutes agences"}
+                    {user.agency || "Toutes agences"} - MFA {user.mfaEnabled ? "actif" : "inactif"}
                   </div>
                 </div>
 

@@ -27,6 +27,9 @@ export async function POST(req: Request) {
         company: body.company || null,
         photoUrl: photoUrl || null,
         phoneAgency: body.phoneAgency || null,
+        interventionType: body.interventionType || null,
+        vehiclePlate: body.vehiclePlate || null,
+        authorizedSite: body.authorizedSite || null,
         isActive: true,
       },
     });

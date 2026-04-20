@@ -30,7 +30,13 @@ export default function BackofficeShell({
           <Link href="/employees/new">Ajouter</Link>
           <Link href="/scans">Scans</Link>
           <Link href="/users">Utilisateurs</Link>
+          <Link href="/security">Securite</Link>
           <Link href="/settings">Parametrage</Link>
+          <form action="/api/auth/logout" method="post">
+            <button type="submit" className="underline">
+              Deconnexion
+            </button>
+          </form>
         </div>
 
         {children}

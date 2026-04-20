@@ -1,4 +1,5 @@
 import { connection } from "next/server";
+import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 
 type VerifyState = "valid" | "missing" | "invalid" | "expired" | "unavailable";
@@ -48,6 +49,28 @@ async function getEmployeeByToken(token: string) {
   });
 }
 
+async function logScan({
+  token,
+  result,
+  company,
+}: {
+  token: string;
+  result: string;
+  company?: string | null;
+}) {
+  const headersList = await headers();
+
+  await prisma.scanLog.create({
+    data: {
+      token,
+      result,
+      company: company || null,
+      ipAddress: headersList.get("x-forwarded-for"),
+      userAgent: headersList.get("user-agent"),
+    },
+  });
+}
+
 export default async function VerifyPage({
   searchParams,
 }: {
@@ -78,6 +101,8 @@ export default async function VerifyPage({
   }
 
   if (!employee || !employee.qrToken) {
+    await logScan({ token, result: "invalid" });
+
     return (
       <VerifyCard
         state="invalid"
@@ -105,14 +130,22 @@ export default async function VerifyPage({
   const isExpired = isRevoked || isExpiredByDate || isAuthorizationExpired;
 
   if (isExpired) {
+    await logScan({ token, result: "expired", company: employee.company });
+
     return (
       <VerifyCard
         state="expired"
         title="Acces expire"
         message="Ce QR code n'est plus valide."
-      />
+      >
+        <a href={`/report?token=${encodeURIComponent(token)}`} className="mt-5 inline-block underline">
+          Signaler une anomalie
+        </a>
+      </VerifyCard>
     );
   }
+
+  await logScan({ token, result: "valid", company: employee.company });
 
   return (
     <VerifyCard state="valid" title="Acces autorise">
@@ -130,6 +163,21 @@ export default async function VerifyPage({
       <p className="text-slate-500">
         {employee.company} - {employee.agency}
       </p>
+      {employee.interventionType ? (
+        <p className="mt-3 text-slate-700">Intervention : {employee.interventionType}</p>
+      ) : null}
+      {employee.authorizedSite ? (
+        <p className="text-slate-700">Site : {employee.authorizedSite}</p>
+      ) : null}
+      {employee.vehiclePlate ? (
+        <p className="text-slate-700">Vehicule : {employee.vehiclePlate}</p>
+      ) : null}
+      {employee.phoneAgency ? (
+        <p className="mt-3 text-sm text-slate-500">Contact agence : {employee.phoneAgency}</p>
+      ) : null}
+      <a href={`/report?token=${encodeURIComponent(token)}`} className="mt-5 inline-block underline">
+        Signaler une anomalie
+      </a>
     </VerifyCard>
   );
 }

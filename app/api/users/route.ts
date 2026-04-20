@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { hashPassword } from "@/lib/password";
 
 const ROLES = new Set([
   "SUPER_ADMIN_GROUP",
@@ -39,10 +40,27 @@ export async function POST(req: Request) {
   const role = normalizeText(body.role);
   const company = normalizeText(body.company);
   const agency = normalizeText(body.agency);
+  const password = normalizeText(body.password);
+  const mfaEnabled = body.mfaEnabled === true;
+  const mfaCode = normalizeText(body.mfaCode);
 
   if (!email || !firstName || !lastName || !ROLES.has(role)) {
     return Response.json({ ok: false }, { status: 400 });
   }
+
+  if (password && password.length < 10) {
+    return Response.json({ ok: false }, { status: 400 });
+  }
+
+  if (mfaEnabled && mfaCode.length < 6) {
+    return Response.json({ ok: false }, { status: 400 });
+  }
+
+  const passwordData = password ? { passwordHash: hashPassword(password) } : {};
+  const mfaData = {
+    mfaEnabled,
+    mfaCodeHash: mfaEnabled ? hashPassword(mfaCode) : null,
+  };
 
   const user = await prisma.appUser.upsert({
     where: { email },
@@ -51,6 +69,8 @@ export async function POST(req: Request) {
       firstName,
       lastName,
       role,
+      ...passwordData,
+      ...mfaData,
       company: company || null,
       agency: agency || null,
       isActive: true,
@@ -59,6 +79,8 @@ export async function POST(req: Request) {
       firstName,
       lastName,
       role,
+      ...passwordData,
+      ...mfaData,
       company: company || null,
       agency: agency || null,
       isActive: true,

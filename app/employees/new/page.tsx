@@ -24,6 +24,9 @@ export default function NewEmployeePage() {
     company: "",
     photoUrl: "",
     phoneAgency: "",
+    interventionType: "",
+    vehiclePlate: "",
+    authorizedSite: "",
     status: "active",
     expiresAt: "",
   });
@@ -217,6 +220,27 @@ export default function NewEmployeePage() {
             value={form.phoneAgency}
             onChange={(e) => setForm({ ...form, phoneAgency: e.target.value })}
           />
+
+          <div className="grid gap-4 md:grid-cols-3">
+            <input
+              className="w-full border rounded-xl p-3"
+              placeholder="Type intervention autorisee"
+              value={form.interventionType}
+              onChange={(e) => setForm({ ...form, interventionType: e.target.value })}
+            />
+            <input
+              className="w-full border rounded-xl p-3"
+              placeholder="Vehicule / plaque"
+              value={form.vehiclePlate}
+              onChange={(e) => setForm({ ...form, vehiclePlate: e.target.value })}
+            />
+            <input
+              className="w-full border rounded-xl p-3"
+              placeholder="Client ou site autorise"
+              value={form.authorizedSite}
+              onChange={(e) => setForm({ ...form, authorizedSite: e.target.value })}
+            />
+          </div>
 
           <div className="grid gap-4 md:grid-cols-2">
             <select

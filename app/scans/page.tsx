@@ -40,8 +40,10 @@ export default async function ScansPage() {
                 >
                   <div>
                     <div className="font-semibold break-all">Token : {scan.token}</div>
-                    <div className="text-slate-600">Resultat : {scan.result}</div>
-                    <div className="text-slate-600">
+                  <div className="text-slate-600">Resultat : {scan.result}</div>
+                  <div className="text-slate-600">Societe : {scan.company || "-"}</div>
+                  <div className="text-slate-600">IP : {scan.ipAddress || "-"}</div>
+                  <div className="text-slate-600">
                       User Agent : {scan.userAgent || "-"}
                     </div>
                   </div>

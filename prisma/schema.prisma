@@ -17,6 +17,9 @@ model Employee {
   company      String?
   photoUrl     String?
   phoneAgency  String?
+  interventionType String?
+  vehiclePlate String?
+  authorizedSite String?
   isActive     Boolean        @default(true)
   authorization Authorization?
   qrToken      QrToken?
@@ -44,11 +47,27 @@ model AppUser {
   firstName String
   lastName  String
   role      String
+  passwordHash String?
+  mfaEnabled Boolean @default(false)
+  mfaCodeHash String?
   company   String?
   agency    String?
   isActive  Boolean  @default(true)
+  loginLogs LoginLog[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model LoginLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  email     String
+  success   Boolean
+  reason    String?
+  ipAddress String?
+  userAgent String?
+  user      AppUser? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
 }
 
 model Authorization {
@@ -77,6 +96,8 @@ model ScanLog {
   id        String   @id @default(cuid())
   token     String
   result    String
+  company   String?
+  ipAddress String?
   userAgent String?
   createdAt DateTime @default(now())
 }

@@ -140,6 +140,9 @@ export default async function EmployeeDetailPage({ params }: Props) {
             <InfoItem label="Societe" value={employee.company} />
             <InfoItem label="Agence" value={employee.agency} />
             <InfoItem label="Telephone agence" value={employee.phoneAgency} />
+            <InfoItem label="Type intervention" value={employee.interventionType} />
+            <InfoItem label="Vehicule / plaque" value={employee.vehiclePlate} />
+            <InfoItem label="Client ou site autorise" value={employee.authorizedSite} />
             <InfoItem label="Etat collaborateur" value={employee.isActive ? "Actif" : "Inactif"} />
             <InfoItem label="Autorisation depuis" value={formatDate(employee.authorization?.validFrom)} />
             <InfoItem label="Valide jusqu'au" value={formatDate(employee.authorization?.validUntil)} />
