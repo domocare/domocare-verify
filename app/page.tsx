@@ -1,155 +1,184 @@
 import Image from "next/image";
 import Link from "next/link";
 import {
-  BadgeCheck,
-  BarChart3,
-  Building2,
+  ArrowDown,
+  ArrowRight,
   CheckCircle2,
-  Clock3,
-  FileCheck2,
   Leaf,
   LockKeyhole,
   QrCode,
   ShieldCheck,
-  Smartphone,
-  UsersRound,
 } from "lucide-react";
 
-const benefits = [
+const featureCards = [
   {
-    icon: QrCode,
-    title: "Controle instantane par QR code",
-    text: "Chaque collaborateur dispose d'une preuve terrain lisible en quelques secondes par vos equipes ou vos clients.",
+    icon: "/sassbeyond/features_icon01.png",
+    tone: "bg-[#fff7d7]",
+    title: "Controle QR code",
+    text: "Un scan suffit pour verifier si un intervenant est autorise sur site.",
   },
   {
-    icon: BadgeCheck,
-    title: "Habilitations toujours a jour",
-    text: "Statuts actif, expire ou suspendu visibles sans tableur, avec une lecture claire pour les agences et les encadrants.",
+    icon: "/sassbeyond/features_icon02.png",
+    tone: "bg-[#efe7ff]",
+    title: "Habilitations a jour",
+    text: "Suivez les statuts actifs, expires ou suspendus sans fichier eparpille.",
   },
   {
-    icon: FileCheck2,
-    title: "Tracabilite des verifications",
-    text: "Les scans et incidents sont centralises pour simplifier les controles qualite, securite et conformite.",
+    icon: "/sassbeyond/features_icon03.png",
+    tone: "bg-[#e2f4ff]",
+    title: "Preuve de passage",
+    text: "Chaque verification terrain devient une trace exploitable par l'agence.",
   },
   {
-    icon: UsersRound,
-    title: "Pense pour les equipes paysage",
-    text: "Suivi des jardiniers, chefs d'equipe, sous-traitants et intervenants multi-sites dans un espace unique.",
+    icon: "/sassbeyond/features_icon04.png",
+    tone: "bg-[#ffe8de]",
+    title: "Acces securise",
+    text: "Le back-office reste reserve aux responsables et administrateurs.",
   },
 ];
 
-const steps = [
-  "Importez ou creez vos collaborateurs",
-  "Attribuez les droits, agences et dates de validite",
-  "Generez le QR code et verifiez sur chantier",
+const processItems = [
+  {
+    icon: "/sassbeyond/business_icon01.png",
+    image: "/sassbeyond/business_img01.png",
+    title: "Centralisez les collaborateurs",
+    text: "Importez vos equipes, associez-les aux agences, aux entreprises du groupe et aux missions terrain.",
+    reverse: false,
+  },
+  {
+    icon: "/sassbeyond/business_icon02.png",
+    image: "/sassbeyond/business_img02.png",
+    title: "Attribuez les droits d'acces",
+    text: "Definissez les dates de validite, les statuts et les suspensions depuis un espace unique.",
+    reverse: true,
+  },
+  {
+    icon: "/sassbeyond/business_icon03.png",
+    image: "/sassbeyond/business_img03.png",
+    title: "Verifiez sur chantier",
+    text: "Les encadrants ou clients scannent le QR code et voient instantanement si l'acces est conforme.",
+    reverse: false,
+  },
 ];
 
 const metrics = [
-  { value: "30 sec", label: "pour controler un intervenant" },
-  { value: "24/7", label: "verification terrain accessible" },
-  { value: "1 vue", label: "pour piloter toutes les agences" },
+  ["30 sec", "controle terrain"],
+  ["24/7", "verification disponible"],
+  ["1 outil", "pour agences et siege"],
 ];
 
 export default function MarketingPage() {
   return (
-    <main className="min-h-screen bg-white text-slate-950">
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/15 bg-slate-950/75 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen overflow-hidden bg-white text-slate-950">
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/15 bg-[#111827]/75 backdrop-blur-xl">
+        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-3 text-white">
-            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500">
+            <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-emerald-400 text-slate-950">
               <ShieldCheck className="h-6 w-6" />
             </span>
             <span>
-              <span className="block text-base font-bold leading-4">Domocare Verify</span>
-              <span className="block text-xs font-semibold uppercase tracking-[0.18em] text-emerald-200">
-                Controle d&apos;acces
+              <span className="block text-lg font-black leading-5">Lantana Verify</span>
+              <span className="block text-xs font-bold uppercase tracking-[0.18em] text-emerald-100">
+                Groupe Lantana
               </span>
             </span>
           </Link>
 
-          <nav className="hidden items-center gap-8 text-sm font-semibold text-white/80 md:flex">
-            <a href="#solution" className="transition hover:text-white">
-              Solution
+          <nav className="hidden items-center gap-8 text-sm font-bold text-white/80 md:flex">
+            <a href="#fonctionnalites" className="transition hover:text-white">
+              Fonctionnalites
             </a>
-            <a href="#terrain" className="transition hover:text-white">
+            <a href="#process" className="transition hover:text-white">
+              Process
+            </a>
+            <a href="#preuve" className="transition hover:text-white">
               Terrain
-            </a>
-            <a href="#pilotage" className="transition hover:text-white">
-              Pilotage
             </a>
           </nav>
 
           <Link
             href="/login"
-            className="rounded-lg bg-white px-4 py-2 text-sm font-bold text-slate-950 transition hover:bg-emerald-100"
+            className="rounded-lg bg-white px-5 py-3 text-sm font-black text-slate-950 transition hover:bg-emerald-100"
           >
             Connexion
           </Link>
         </div>
       </header>
 
-      <section className="relative isolate flex min-h-[86vh] items-center overflow-hidden bg-slate-950 px-4 pt-24 text-white sm:px-6 lg:px-8">
+      <section className="relative isolate min-h-[92vh] bg-[#111827] pt-20 text-white">
         <Image
           src="/sassbeyond/banner_bg01.png"
           alt=""
           fill
           priority
-          className="object-cover opacity-45"
+          className="object-cover opacity-65"
           sizes="100vw"
         />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,6,23,0.94),rgba(15,23,42,0.70),rgba(2,6,23,0.35))]" />
+        <div className="absolute inset-0 bg-[linear-gradient(100deg,rgba(17,24,39,0.98)_0%,rgba(22,45,57,0.82)_48%,rgba(17,24,39,0.40)_100%)]" />
 
-        <div className="relative z-10 mx-auto grid w-full max-w-7xl gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+        <div className="relative z-10 mx-auto grid min-h-[calc(92vh-5rem)] max-w-7xl items-center gap-10 px-4 py-12 sm:px-6 lg:grid-cols-[1.02fr_0.98fr] lg:px-8">
           <div className="max-w-3xl">
-            <div className="mb-5 inline-flex items-center gap-2 rounded-lg border border-emerald-300/30 bg-emerald-300/10 px-3 py-2 text-sm font-semibold text-emerald-100">
-              <Leaf className="h-4 w-4" />
-              Logiciel de controle d&apos;acces pour entreprises du paysage
+            <div className="mb-6 inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/10 px-4 py-3 text-sm font-bold text-emerald-50">
+              <Leaf className="h-4 w-4 text-emerald-300" />
+              Logiciel de controle d&apos;acces pour les entreprises du paysage
             </div>
+
             <h1 className="text-5xl font-black leading-[1.02] tracking-tight sm:text-6xl lg:text-7xl">
-              Domocare Verify
+              Controlez vos acces terrain en temps reel.
             </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-100 sm:text-xl">
-              Verifiez en temps reel qui intervient sur vos chantiers, quels droits sont valides
-              et quelles preuves de controle ont ete tracees.
+            <p className="mt-7 max-w-2xl text-lg leading-8 text-slate-100 sm:text-xl">
+              Lantana Verify adapte le principe du template SassBeyond a votre metier:
+              habilitations, QR codes, scans, preuves de controle et pilotage multi-agences.
             </p>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <Link
                 href="/login"
-                className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-400 px-5 py-3 text-sm font-black text-slate-950 transition hover:bg-emerald-300"
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-400 px-6 py-4 text-sm font-black text-slate-950 transition hover:bg-emerald-300"
               >
                 Acceder au logiciel
                 <LockKeyhole className="h-4 w-4" />
               </Link>
               <a
-                href="#solution"
-                className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/25 px-5 py-3 text-sm font-bold text-white transition hover:bg-white/10"
+                href="#fonctionnalites"
+                className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/25 px-6 py-4 text-sm font-black text-white transition hover:bg-white/10"
               >
-                Voir la solution
-                <Smartphone className="h-4 w-4" />
+                Decouvrir
+                <ArrowDown className="h-4 w-4" />
               </a>
+            </div>
+
+            <div className="mt-10 grid max-w-2xl gap-3 sm:grid-cols-3">
+              {metrics.map(([value, label]) => (
+                <div key={label} className="rounded-lg border border-white/15 bg-white/10 p-4">
+                  <p className="text-3xl font-black text-emerald-200">{value}</p>
+                  <p className="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-slate-200">
+                    {label}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
 
-          <div className="relative hidden min-h-[520px] lg:block">
-            <div className="absolute right-0 top-6 w-[88%]">
-              <Image
-                src="/sassbeyond/banner_app.png"
-                alt="Apercu mobile du controle d'acces Domocare Verify"
-                width={640}
-                height={760}
-                priority
-                className="h-auto w-full drop-shadow-[0_36px_60px_rgba(0,0,0,0.35)]"
-              />
-            </div>
-            <div className="absolute bottom-12 left-0 w-72 rounded-lg border border-white/15 bg-white/95 p-4 text-slate-950 shadow-2xl">
-              <div className="flex items-center gap-3">
-                <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
-                  <CheckCircle2 className="h-6 w-6" />
+          <div className="relative hidden min-h-[600px] lg:block">
+            <Image
+              src="/sassbeyond/banner_app.png"
+              alt="Interface mobile Lantana Verify"
+              width={650}
+              height={780}
+              priority
+              className="absolute right-0 top-4 h-auto w-[88%] drop-shadow-[0_42px_70px_rgba(0,0,0,0.38)]"
+            />
+            <div className="absolute bottom-16 left-2 w-80 rounded-lg border border-white/15 bg-white p-5 text-slate-950 shadow-2xl">
+              <div className="flex items-center gap-4">
+                <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
+                  <CheckCircle2 className="h-7 w-7" />
                 </span>
                 <div>
                   <p className="text-sm font-black">Acces valide</p>
-                  <p className="text-xs text-slate-500">Chef d&apos;equipe - Chantier sud</p>
+                  <p className="text-xs font-semibold text-slate-500">
+                    Equipe paysage - Intervention autorisee
+                  </p>
                 </div>
               </div>
             </div>
@@ -157,116 +186,181 @@ export default function MarketingPage() {
         </div>
       </section>
 
-      <section id="solution" className="bg-slate-50 py-16 sm:py-20">
+      <section id="fonctionnalites" className="relative bg-white py-20 sm:py-28">
+        <div className="pointer-events-none absolute -right-28 top-16 hidden w-72 opacity-25 lg:block">
+          <Image
+            src="/sassbeyond/overlay_phone01.png"
+            alt=""
+            width={420}
+            height={640}
+            className="h-auto w-full"
+          />
+        </div>
+
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-5 md:grid-cols-3">
-            {metrics.map((metric) => (
-              <div key={metric.label} className="rounded-lg border border-slate-200 bg-white p-6">
-                <p className="text-4xl font-black text-emerald-700">{metric.value}</p>
-                <p className="mt-2 text-sm font-semibold text-slate-600">{metric.label}</p>
-              </div>
+          <div className="mx-auto max-w-4xl text-center">
+            <p className="text-sm font-black uppercase tracking-[0.22em] text-emerald-700">
+              Fonctionnalites
+            </p>
+            <h2 className="mt-4 text-4xl font-black tracking-tight sm:text-5xl">
+              Les services essentiels du controle d&apos;acces terrain.
+            </h2>
+          </div>
+
+          <div className="mt-14 grid gap-6 lg:grid-cols-2">
+            {featureCards.map((feature) => (
+              <article
+                key={feature.title}
+                className="flex gap-5 rounded-lg border border-slate-200 bg-white p-6 shadow-[0_24px_70px_rgba(15,23,42,0.08)]"
+              >
+                <span
+                  className={`flex h-20 w-20 shrink-0 items-center justify-center rounded-lg ${feature.tone}`}
+                >
+                  <Image src={feature.icon} alt="" width={42} height={42} />
+                </span>
+                <div>
+                  <h3 className="text-2xl font-black tracking-tight">{feature.title}</h3>
+                  <p className="mt-3 leading-7 text-slate-600">{feature.text}</p>
+                </div>
+              </article>
             ))}
           </div>
 
-          <div className="mt-14 grid gap-6 lg:grid-cols-4">
-            {benefits.map((benefit) => {
-              const Icon = benefit.icon;
-
-              return (
-                <article
-                  key={benefit.title}
-                  className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm"
-                >
-                  <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-slate-950 text-emerald-300">
-                    <Icon className="h-6 w-6" />
-                  </span>
-                  <h2 className="mt-5 text-xl font-black tracking-tight">{benefit.title}</h2>
-                  <p className="mt-3 text-sm leading-6 text-slate-600">{benefit.text}</p>
-                </article>
-              );
-            })}
+          <div className="mt-12 text-center">
+            <Link
+              href="/login"
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-950 px-6 py-4 text-sm font-black text-white transition hover:bg-emerald-700"
+            >
+              Voir le back-office
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
         </div>
       </section>
 
-      <section id="terrain" className="py-16 sm:py-24">
-        <div className="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-[0.92fr_1.08fr] lg:px-8 lg:items-center">
-          <div className="relative overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
+      <section id="process" className="bg-[#f7fbfb] py-20 sm:py-28">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-4xl text-center">
+            <p className="text-sm font-black uppercase tracking-[0.22em] text-emerald-700">
+              Process metier
+            </p>
+            <h2 className="mt-4 text-4xl font-black tracking-tight sm:text-5xl">
+              Du siege au chantier, le controle reste simple.
+            </h2>
+            <p className="mt-5 text-lg leading-8 text-slate-600">
+              Le template est adapte pour presenter une application SaaS claire: un parcours
+              court, des preuves visibles et une entree directe vers la connexion.
+            </p>
+          </div>
+
+          <div className="mt-16 grid gap-20">
+            {processItems.map((item) => (
+              <article
+                key={item.title}
+                className="grid items-center gap-10 lg:grid-cols-2"
+              >
+                <div className={item.reverse ? "lg:order-2" : ""}>
+                  <Image src={item.icon} alt="" width={68} height={68} />
+                  <h3 className="mt-8 max-w-xl text-4xl font-black tracking-tight">
+                    {item.title}
+                  </h3>
+                  <p className="mt-5 max-w-xl text-lg leading-8 text-slate-600">{item.text}</p>
+                  <Link
+                    href="/login"
+                    className="mt-8 inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-5 py-3 text-sm font-black text-white transition hover:bg-emerald-700"
+                  >
+                    Se connecter
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
+
+                <div
+                  className={`relative rounded-lg bg-white p-4 shadow-[0_30px_80px_rgba(15,23,42,0.10)] ${
+                    item.reverse ? "lg:order-1" : ""
+                  }`}
+                >
+                  <Image
+                    src={item.image}
+                    alt={item.title}
+                    width={760}
+                    height={520}
+                    className="h-auto w-full rounded-lg"
+                  />
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="preuve" className="relative overflow-hidden bg-white py-20 sm:py-28">
+        <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-[0.55fr_1fr] lg:px-8">
+          <div className="hidden lg:block">
             <Image
-              src="/sassbeyond/business_img01.png"
-              alt="Interface de pilotage pour controle d'acces"
-              width={720}
-              height={560}
-              className="h-auto w-full object-cover"
+              src="/sassbeyond/quote_icon.png"
+              alt=""
+              width={220}
+              height={170}
+              className="h-auto w-56"
             />
           </div>
 
           <div>
-            <div className="mb-4 inline-flex items-center gap-2 rounded-lg bg-amber-100 px-3 py-2 text-sm font-bold text-amber-900">
-              <Clock3 className="h-4 w-4" />
-              Du bureau au chantier
-            </div>
-            <h2 className="max-w-2xl text-4xl font-black tracking-tight sm:text-5xl">
-              Une verification claire pour les agences, les encadrants et les clients.
+            <h2 className="text-4xl font-black tracking-tight sm:text-5xl">
+              Une preuve lisible pour chaque controle.
             </h2>
-            <p className="mt-5 max-w-2xl leading-7 text-slate-600">
-              Domocare Verify transforme vos habilitations en preuves d&apos;acces simples a
-              consulter. Vos equipes terrain scannent, le siege pilote, et chaque controle
-              reste exploitable.
+            <p className="mt-6 text-2xl font-semibold leading-10 text-slate-700">
+              Les equipes terrain savent immediatement si l&apos;intervenant est autorise.
+              Les responsables gardent une vision fiable des scans, statuts et alertes.
             </p>
 
-            <div className="mt-8 grid gap-4">
-              {steps.map((step, index) => (
-                <div key={step} className="flex items-center gap-4 rounded-lg border border-slate-200 p-4">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-600 text-sm font-black text-white">
-                    {index + 1}
-                  </span>
-                  <p className="font-bold text-slate-800">{step}</p>
-                </div>
-              ))}
+            <div className="mt-8 flex items-center gap-4">
+              <span className="flex h-14 w-14 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
+                <QrCode className="h-7 w-7" />
+              </span>
+              <div>
+                <p className="font-black">Verification QR code</p>
+                <p className="text-sm font-semibold text-slate-500">
+                  Pour agences, encadrants et clients du Groupe Lantana
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section id="pilotage" className="bg-slate-950 py-16 text-white sm:py-24">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
-            <div>
-              <div className="mb-4 inline-flex items-center gap-2 rounded-lg bg-sky-400/15 px-3 py-2 text-sm font-bold text-sky-100">
-                <BarChart3 className="h-4 w-4" />
-                Pilotage multi-agences
-              </div>
-              <h2 className="text-4xl font-black tracking-tight sm:text-5xl">
-                Une vitrine publique, un back-office securise.
-              </h2>
-              <p className="mt-5 leading-7 text-slate-300">
-                La page publique presente la valeur du logiciel. La connexion reste reservee
-                aux administrateurs pour gerer collaborateurs, scans, incidents et parametrage.
-              </p>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              {[
-                ["Agences", "Centralisez les droits par entite et secteur."],
-                ["Securite", "Gardez une trace des statuts et suspensions."],
-                ["Clients", "Donnez une preuve simple en cas de controle."],
-                ["Reporting", "Suivez les volumes de scans et alertes."],
-              ].map(([title, text]) => (
-                <div key={title} className="rounded-lg border border-white/10 bg-white/5 p-5">
-                  <Building2 className="h-6 w-6 text-emerald-300" />
-                  <h3 className="mt-4 text-lg font-black">{title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-slate-300">{text}</p>
-                </div>
-              ))}
-            </div>
+      <section className="relative overflow-hidden bg-slate-950 py-16 text-white">
+        <Image
+          src="/sassbeyond/newsletter_bg.png"
+          alt=""
+          fill
+          className="object-cover opacity-25"
+          sizes="100vw"
+        />
+        <div className="relative z-10 mx-auto flex max-w-7xl flex-col gap-6 px-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+          <div>
+            <p className="text-sm font-black uppercase tracking-[0.22em] text-emerald-200">
+              Lantana Verify
+            </p>
+            <h2 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">
+              Accedez au logiciel de controle d&apos;acces.
+            </h2>
           </div>
+          <Link
+            href="/login"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-6 py-4 text-sm font-black text-slate-950 transition hover:bg-emerald-100"
+          >
+            Connexion securisee
+            <LockKeyhole className="h-4 w-4" />
+          </Link>
         </div>
       </section>
 
       <footer className="bg-white py-8">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 text-sm text-slate-500 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
-          <p className="font-semibold text-slate-700">Domocare Verify - Controle d&apos;acces paysage</p>
+          <p className="font-semibold text-slate-700">
+            Lantana Verify - Controle d&apos;acces paysage
+          </p>
           <div className="flex gap-4">
             <Link href="/login" className="font-bold text-slate-900 hover:text-emerald-700">
               Connexion
