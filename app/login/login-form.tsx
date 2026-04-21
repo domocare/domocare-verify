@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { CheckCircle2, Leaf, LockKeyhole, QrCode, ShieldCheck } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Leaf, LockKeyhole, QrCode, ShieldCheck } from "lucide-react";
 import CompanyLogo from "@/components/company-logo";
 import { companyBrands } from "@/lib/company-branding";
 
@@ -43,17 +43,27 @@ export default function LoginForm() {
 
       <div className="relative z-10 mx-auto grid min-h-screen w-full max-w-7xl items-center gap-10 px-4 py-8 sm:px-6 md:py-12 lg:grid-cols-[1fr_460px] lg:px-8">
         <section className="space-y-8">
-          <Link href="/" className="inline-flex items-center gap-3 text-white">
-            <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-400 text-slate-950">
-              <ShieldCheck className="h-7 w-7" />
-            </span>
-            <span>
-              <span className="block text-xl font-black leading-5">Lantana Verify</span>
-              <span className="block text-xs font-bold uppercase tracking-[0.18em] text-emerald-100">
-                Groupe Lantana
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <Link href="/" className="inline-flex items-center gap-3 text-white">
+              <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-400 text-slate-950">
+                <ShieldCheck className="h-7 w-7" />
               </span>
-            </span>
-          </Link>
+              <span>
+                <span className="block text-xl font-black leading-5">Lantana Verify</span>
+                <span className="block text-xs font-bold uppercase tracking-[0.18em] text-emerald-100">
+                  Groupe Lantana
+                </span>
+              </span>
+            </Link>
+
+            <Link
+              href="/"
+              className="inline-flex w-fit items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-sm font-black text-white backdrop-blur transition hover:bg-white hover:text-slate-950"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Retour au site
+            </Link>
+          </div>
 
           <div>
             <div className="mb-5 inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/10 px-4 py-3 text-sm font-bold text-emerald-50">
