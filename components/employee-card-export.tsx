@@ -1,5 +1,7 @@
 "use client";
 
+import { getCompanyBrand } from "@/lib/company-branding";
+
 type ExportEmployee = {
   firstName: string;
   lastName: string;
@@ -21,8 +23,11 @@ type EmployeeCardExportProps = {
   verifyUrl: string;
 };
 
-const cardWidth = 1012;
-const cardHeight = 638;
+const cardWidthPt = 244.95;
+const cardHeightPt = 153.07;
+const cardScale = 4;
+const cardWidth = Math.round(cardWidthPt * cardScale);
+const cardHeight = Math.round(cardHeightPt * cardScale);
 
 function sanitizeFileName(value: string) {
   return value
@@ -31,20 +36,6 @@ function sanitizeFileName(value: string) {
     .replace(/[^a-zA-Z0-9-_]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .toLowerCase();
-}
-
-function getStatusColors(statusLabel: string) {
-  const normalized = statusLabel.toLowerCase();
-
-  if (normalized.includes("autor")) {
-    return { fill: "#dcfce7", text: "#166534", border: "#86efac" };
-  }
-
-  if (normalized.includes("expir")) {
-    return { fill: "#fef3c7", text: "#92400e", border: "#fcd34d" };
-  }
-
-  return { fill: "#fee2e2", text: "#991b1b", border: "#fca5a5" };
 }
 
 function drawRoundedRect(
@@ -116,6 +107,34 @@ function fieldValue(value?: string | null) {
   return value && value.trim() ? value : "-";
 }
 
+function drawCoverImage(
+  ctx: CanvasRenderingContext2D,
+  image: HTMLImageElement,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+) {
+  const ratio = Math.max(width / image.width, height / image.height);
+  const drawWidth = image.width * ratio;
+  const drawHeight = image.height * ratio;
+  ctx.drawImage(image, x + (width - drawWidth) / 2, y + (height - drawHeight) / 2, drawWidth, drawHeight);
+}
+
+function drawContainImage(
+  ctx: CanvasRenderingContext2D,
+  image: HTMLImageElement,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+) {
+  const ratio = Math.min(width / image.width, height / image.height);
+  const drawWidth = image.width * ratio;
+  const drawHeight = image.height * ratio;
+  ctx.drawImage(image, x + (width - drawWidth) / 2, y + (height - drawHeight) / 2, drawWidth, drawHeight);
+}
+
 function escapeHtml(value: string) {
   return value
     .replace(/&/g, "&amp;")
@@ -127,13 +146,13 @@ function escapeHtml(value: string) {
 
 export default function EmployeeCardExport({
   employee,
-  statusLabel,
   validUntil,
   qrImage,
   verifyUrl,
 }: EmployeeCardExportProps) {
   const fullName = `${employee.firstName} ${employee.lastName}`;
   const fileBaseName = sanitizeFileName(`carte-${fullName}`) || "carte-collaborateur";
+  const brand = getCompanyBrand(employee.company);
 
   async function exportPng() {
     const canvas = document.createElement("canvas");
@@ -143,8 +162,11 @@ export default function EmployeeCardExport({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const statusColors = getStatusColors(statusLabel);
-    const [photo, qr] = await Promise.all([loadImage(employee.photoUrl), loadImage(qrImage)]);
+    const [photo, qr, logo] = await Promise.all([
+      loadImage(employee.photoUrl),
+      loadImage(qrImage),
+      loadImage(brand.logo),
+    ]);
 
     ctx.fillStyle = "#f8fafc";
     ctx.fillRect(0, 0, cardWidth, cardHeight);
@@ -158,11 +180,15 @@ export default function EmployeeCardExport({
 
     ctx.fillStyle = "#0f172a";
     ctx.font = "700 34px Arial, sans-serif";
-    ctx.fillText("Domocare Verify", 76, 96);
+    ctx.fillText("Lantana Verify", 76, 96);
 
     ctx.fillStyle = "#64748b";
     ctx.font = "500 20px Arial, sans-serif";
-    ctx.fillText("Carte d'intervention securisee", 76, 128);
+    ctx.fillText("Carte d'intervention securisee par QR code", 76, 128);
+
+    if (logo) {
+      drawContainImage(ctx, logo, 708, 70, 176, 70);
+    }
 
     ctx.fillStyle = "#0f172a";
     ctx.font = "700 42px Arial, sans-serif";
@@ -172,14 +198,14 @@ export default function EmployeeCardExport({
     ctx.font = "500 25px Arial, sans-serif";
     drawWrappedText(ctx, fieldValue(employee.jobTitle), 76, 316, 520, 34, 2);
 
-    ctx.fillStyle = statusColors.fill;
-    drawRoundedRect(ctx, 76, 372, 250, 54, 27);
+    ctx.fillStyle = "#ecfdf5";
+    drawRoundedRect(ctx, 76, 372, 310, 54, 27);
     ctx.fill();
-    ctx.strokeStyle = statusColors.border;
+    ctx.strokeStyle = "#86efac";
     ctx.stroke();
-    ctx.fillStyle = statusColors.text;
-    ctx.font = "700 24px Arial, sans-serif";
-    ctx.fillText(statusLabel, 102, 407);
+    ctx.fillStyle = "#166534";
+    ctx.font = "700 21px Arial, sans-serif";
+    ctx.fillText("Statut verifie par QR code", 102, 407);
 
     ctx.fillStyle = "#64748b";
     ctx.font = "600 17px Arial, sans-serif";
@@ -203,10 +229,7 @@ export default function EmployeeCardExport({
       ctx.save();
       drawRoundedRect(ctx, 650, 76, 246, 246, 24);
       ctx.clip();
-      const ratio = Math.max(246 / photo.width, 246 / photo.height);
-      const width = photo.width * ratio;
-      const height = photo.height * ratio;
-      ctx.drawImage(photo, 650 + (246 - width) / 2, 76 + (246 - height) / 2, width, height);
+      drawCoverImage(ctx, photo, 650, 76, 246, 246);
       ctx.restore();
     } else {
       ctx.fillStyle = "#94a3b8";
@@ -223,7 +246,7 @@ export default function EmployeeCardExport({
 
     ctx.fillStyle = "#334155";
     ctx.font = "500 16px Arial, sans-serif";
-    drawWrappedText(ctx, verifyUrl, 640, 612, 292, 20, 2);
+    drawWrappedText(ctx, verifyUrl, 640, 592, 292, 20, 2);
 
     try {
       const link = document.createElement("a");
@@ -242,7 +265,6 @@ export default function EmployeeCardExport({
     const escaped = {
       fullName: escapeHtml(fullName),
       jobTitle: escapeHtml(fieldValue(employee.jobTitle)),
-      statusLabel: escapeHtml(statusLabel),
       company: escapeHtml(fieldValue(employee.company)),
       agency: escapeHtml(fieldValue(employee.agency)),
       validUntil: escapeHtml(validUntil),
@@ -250,6 +272,7 @@ export default function EmployeeCardExport({
       vehiclePlate: escapeHtml(fieldValue(employee.vehiclePlate)),
       authorizedSite: escapeHtml(fieldValue(employee.authorizedSite)),
       photoUrl: employee.photoUrl ? escapeHtml(employee.photoUrl) : "",
+      logoUrl: escapeHtml(brand.logo),
       qrImage: escapeHtml(qrImage),
       verifyUrl: escapeHtml(verifyUrl),
     };
@@ -258,9 +281,9 @@ export default function EmployeeCardExport({
       <!doctype html>
       <html>
         <head>
-          <title>${escaped.fullName} - Carte Domocare Verify</title>
+          <title>${escaped.fullName} - Carte Lantana Verify</title>
           <style>
-            @page { size: 86mm 54mm; margin: 0; }
+            @page { size: ${cardWidthPt}pt ${cardHeightPt}pt; margin: 0; }
             * { box-sizing: border-box; }
             body {
               margin: 0;
@@ -272,36 +295,38 @@ export default function EmployeeCardExport({
               font-family: Arial, sans-serif;
             }
             .card {
-              width: 86mm;
-              height: 54mm;
-              padding: 5mm;
+              width: ${cardWidthPt}pt;
+              height: ${cardHeightPt}pt;
+              padding: 14pt;
               display: grid;
-              grid-template-columns: 1fr 24mm;
-              gap: 4mm;
+              grid-template-columns: 1fr 70pt;
+              gap: 12pt;
               background: white;
-              border: 0.3mm solid #cbd5e1;
-              border-radius: 3mm;
+              border: 0.8pt solid #cbd5e1;
+              border-radius: 8pt;
             }
-            h1 { margin: 0; font-size: 13pt; line-height: 1.1; }
-            .brand { font-size: 7pt; font-weight: 700; color: #0f766e; text-transform: uppercase; }
-            .job { margin-top: 1.5mm; font-size: 7pt; color: #475569; }
-            .status {
+            .top { display: flex; align-items: start; justify-content: space-between; gap: 8pt; }
+            .logo { max-width: 54pt; max-height: 23pt; object-fit: contain; }
+            h1 { margin: 10pt 0 0; font-size: 13pt; line-height: 1.1; }
+            .brand { font-size: 6.5pt; font-weight: 700; color: #0f766e; text-transform: uppercase; }
+            .job { margin-top: 4pt; font-size: 7pt; color: #475569; }
+            .qr-note {
               display: inline-block;
-              margin-top: 3mm;
-              padding: 1.2mm 2.5mm;
-              border-radius: 10mm;
-              border: 0.25mm solid ${getStatusColors(statusLabel).border};
-              background: ${getStatusColors(statusLabel).fill};
-              color: ${getStatusColors(statusLabel).text};
-              font-size: 7pt;
+              margin-top: 8pt;
+              padding: 4pt 7pt;
+              border-radius: 999px;
+              border: 0.7pt solid #86efac;
+              background: #ecfdf5;
+              color: #166534;
+              font-size: 6.6pt;
               font-weight: 700;
             }
-            dl { margin: 3mm 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 1.8mm 3mm; }
-            dt { font-size: 5.5pt; color: #64748b; font-weight: 700; text-transform: uppercase; }
-            dd { margin: 0.5mm 0 0; font-size: 7pt; font-weight: 700; overflow-wrap: anywhere; }
-            .side { display: grid; gap: 2mm; align-content: start; }
-            .photo, .qr { width: 24mm; height: 24mm; border: 0.25mm solid #cbd5e1; border-radius: 2mm; object-fit: cover; }
-            .qr { padding: 1.5mm; background: white; }
+            dl { margin: 8pt 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 5pt 8pt; }
+            dt { font-size: 5.2pt; color: #64748b; font-weight: 700; text-transform: uppercase; }
+            dd { margin: 1pt 0 0; font-size: 6.6pt; font-weight: 700; overflow-wrap: anywhere; }
+            .side { display: grid; gap: 6pt; align-content: start; }
+            .photo, .qr { width: 70pt; height: 70pt; border: 0.7pt solid #cbd5e1; border-radius: 6pt; object-fit: cover; }
+            .qr { padding: 4pt; background: white; }
             .url { font-size: 4.7pt; color: #64748b; overflow-wrap: anywhere; }
             @media print {
               body { min-height: auto; background: white; }
@@ -312,10 +337,13 @@ export default function EmployeeCardExport({
         <body>
           <main class="card">
             <section>
-              <div class="brand">Domocare Verify</div>
+              <div class="top">
+                <div class="brand">Lantana Verify</div>
+                <img class="logo" src="${escaped.logoUrl}" alt="Logo">
+              </div>
               <h1>${escaped.fullName}</h1>
               <div class="job">${escaped.jobTitle}</div>
-              <div class="status">${escaped.statusLabel}</div>
+              <div class="qr-note">Statut verifie par QR code</div>
               <dl>
                 <div><dt>Societe</dt><dd>${escaped.company}</dd></div>
                 <div><dt>Agence</dt><dd>${escaped.agency}</dd></div>

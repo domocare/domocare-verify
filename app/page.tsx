@@ -109,7 +109,7 @@ function HeroPhoneMockup() {
               <p className="text-xs font-semibold text-slate-500">Intervention autorisee</p>
             </div>
           </div>
-          <div className="mx-auto mt-3 grid h-20 w-20 grid-cols-5 gap-1 rounded-lg bg-white p-2 shadow-inner">
+          <div className="mx-auto mt-4 grid h-24 w-24 grid-cols-5 gap-1 rounded-lg bg-white p-2 shadow-inner">
             {Array.from({ length: 25 }).map((_, index) => (
               <span
                 key={index}
@@ -121,20 +121,6 @@ function HeroPhoneMockup() {
               />
             ))}
           </div>
-        </div>
-
-        <div className="absolute inset-x-5 bottom-5 rounded-lg bg-[#4338e8] p-3 text-white">
-          <div className="mb-3 grid grid-cols-3 gap-2 text-center text-[10px] font-bold">
-            <span>QR</span>
-            <span>Statut</span>
-            <span>Trace</span>
-          </div>
-          <Link
-            href="/login"
-            className="flex h-9 items-center justify-center rounded-lg bg-white text-xs font-black uppercase tracking-[0.08em] text-[#4338e8]"
-          >
-            Confirmer
-          </Link>
         </div>
       </div>
     </div>
@@ -237,19 +223,6 @@ export default function MarketingPage() {
           <div className="relative hidden min-h-[620px] lg:block">
             <div className="absolute right-10 top-0">
               <HeroPhoneMockup />
-            </div>
-            <div className="absolute bottom-8 left-0 w-72 rounded-lg border border-white/15 bg-white p-4 text-slate-950 shadow-2xl">
-              <div className="flex items-center gap-4">
-                <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
-                  <CheckCircle2 className="h-7 w-7" />
-                </span>
-                <div>
-                  <p className="text-sm font-black">Acces valide</p>
-                  <p className="text-xs font-semibold text-slate-500">
-                    Equipe paysage - Intervention autorisee
-                  </p>
-                </div>
-              </div>
             </div>
           </div>
         </div>
