@@ -31,7 +31,7 @@ export default function BackofficeShell({
   children,
 }: Props) {
   const navItems = [
-    { href: "/", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/analytics", label: "Pilotage", icon: BarChart3 },
     { href: "/employees", label: "Collaborateurs", icon: Users },
     { href: "/employees/new", label: "Ajouter", icon: Plus },
@@ -46,7 +46,7 @@ export default function BackofficeShell({
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 border-r border-slate-200 bg-white lg:block">
         <div className="flex h-full flex-col">
           <div className="border-b border-slate-100 px-6 py-5">
-            <Link href="/" className="flex items-center gap-3">
+            <Link href="/dashboard" className="flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-emerald-600 text-white">
                 <ShieldCheck className="h-6 w-6" />
               </div>

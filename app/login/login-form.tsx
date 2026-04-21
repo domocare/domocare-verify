@@ -23,7 +23,7 @@ export default function LoginForm() {
       return;
     }
 
-    window.location.href = "/";
+    window.location.href = "/dashboard";
   }
 
   return (

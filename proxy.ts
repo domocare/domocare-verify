@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { SESSION_COOKIE, verifySessionToken } from "@/lib/session";
 
 const PUBLIC_PATHS = [
+  "/",
   "/login",
   "/setup",
   "/verify",
@@ -23,7 +24,7 @@ export function proxy(request: NextRequest) {
 
   if (isPublicPath(pathname)) {
     if (session && (pathname === "/login" || pathname === "/setup")) {
-      return NextResponse.redirect(new URL("/", request.url));
+      return NextResponse.redirect(new URL("/dashboard", request.url));
     }
 
     return NextResponse.next();
