@@ -67,6 +67,80 @@ const metrics = [
   ["1 outil", "pour agences et siege"],
 ];
 
+function HeroPhoneMockup() {
+  return (
+    <div
+      className="relative mx-auto h-[610px] w-[320px] rounded-[2.1rem] bg-[#4338e8] p-[14px] shadow-[0_42px_80px_rgba(0,0,0,0.42)]"
+      aria-label="Telephone affichant un acces valide"
+    >
+      <div className="relative h-full w-full rounded-[2rem] border-[6px] border-[#e8eef5] bg-white p-5 text-slate-950 shadow-inner">
+        <div className="absolute left-1/2 top-3 h-6 w-28 -translate-x-1/2 rounded-b-2xl bg-[#d9dde5]" />
+        <div className="mt-7 flex items-center justify-between text-[10px] font-bold text-slate-500">
+          <span>...</span>
+          <span className="h-2 w-5 rounded-sm border border-slate-300" />
+        </div>
+
+        <div className="mt-7 flex items-center justify-between">
+          <span className="text-2xl font-black leading-none">Lantana Verify</span>
+          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100">
+            <ShieldCheck className="h-5 w-5 text-emerald-700" />
+          </span>
+        </div>
+        <p className="mt-1 text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">
+          Controle terrain
+        </p>
+
+        <div className="mt-7 rounded-lg border border-emerald-100 bg-emerald-50 p-5 text-center">
+          <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full border-[7px] border-emerald-500 text-emerald-600">
+            <CheckCircle2 className="h-14 w-14" />
+          </div>
+          <p className="mt-5 rounded-lg bg-emerald-600 px-4 py-3 text-lg font-black text-white">
+            ACCES VALIDE
+          </p>
+        </div>
+
+        <div className="mt-5 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-800">
+              <Leaf className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-sm font-black">Equipe paysage</p>
+              <p className="text-xs font-semibold text-slate-500">Intervention autorisee</p>
+            </div>
+          </div>
+          <div className="mx-auto mt-4 grid h-28 w-28 grid-cols-5 gap-1 rounded-lg bg-white p-2 shadow-inner">
+            {Array.from({ length: 25 }).map((_, index) => (
+              <span
+                key={index}
+                className={`rounded-[2px] ${
+                  [0, 1, 3, 4, 5, 7, 9, 11, 12, 13, 15, 17, 19, 20, 21, 23, 24].includes(index)
+                    ? "bg-slate-950"
+                    : "bg-slate-100"
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div className="absolute inset-x-5 bottom-5 rounded-lg bg-[#4338e8] p-4 text-white">
+          <div className="mb-4 grid grid-cols-3 gap-2 text-center text-[11px] font-bold">
+            <span>QR</span>
+            <span>Statut</span>
+            <span>Trace</span>
+          </div>
+          <Link
+            href="/login"
+            className="flex h-10 items-center justify-center rounded-lg bg-white text-xs font-black uppercase tracking-[0.08em] text-[#4338e8]"
+          >
+            Confirmer
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function MarketingPage() {
   return (
     <main className="min-h-screen overflow-hidden bg-white text-slate-950">
@@ -160,15 +234,10 @@ export default function MarketingPage() {
             </div>
           </div>
 
-          <div className="relative hidden min-h-[600px] lg:block">
-            <Image
-              src="/lantana-verify/phone-access-valid.png"
-              alt="Telephone affichant un acces valide Lantana Verify"
-              width={896}
-              height={1792}
-              priority
-              className="absolute right-6 top-0 h-[590px] w-auto rounded-[2.2rem] object-contain drop-shadow-[0_42px_70px_rgba(0,0,0,0.38)]"
-            />
+          <div className="relative hidden min-h-[620px] lg:block">
+            <div className="absolute right-10 top-0">
+              <HeroPhoneMockup />
+            </div>
             <div className="absolute bottom-16 left-2 w-80 rounded-lg border border-white/15 bg-white p-5 text-slate-950 shadow-2xl">
               <div className="flex items-center gap-4">
                 <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
@@ -187,16 +256,6 @@ export default function MarketingPage() {
       </section>
 
       <section id="fonctionnalites" className="relative bg-white py-20 sm:py-28">
-        <div className="pointer-events-none absolute -right-28 top-16 hidden w-72 opacity-25 lg:block">
-          <Image
-            src="/lantana-verify/phone-access-valid.png"
-            alt=""
-            width={896}
-            height={1792}
-            className="h-auto w-full rounded-[2rem]"
-          />
-        </div>
-
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-4xl text-center">
             <p className="text-sm font-black uppercase tracking-[0.22em] text-emerald-700">
@@ -297,8 +356,8 @@ export default function MarketingPage() {
         <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-[0.55fr_1fr] lg:px-8">
           <div className="hidden overflow-hidden rounded-lg shadow-[0_30px_80px_rgba(15,23,42,0.14)] lg:block">
             <Image
-              src="/lantana-verify/field-qr-scan.png"
-              alt="Controle QR code valide sur chantier"
+              src="/lantana-verify/proof-access-control.png"
+              alt="Preuve de controle d'acces valide sur chantier"
               width={760}
               height={430}
               className="h-full w-full object-cover"
