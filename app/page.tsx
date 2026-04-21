@@ -73,15 +73,15 @@ function HeroPhoneMockup() {
       className="relative mx-auto h-[610px] w-[320px] rounded-[2.1rem] bg-[#4338e8] p-[14px] shadow-[0_42px_80px_rgba(0,0,0,0.42)]"
       aria-label="Telephone affichant un acces valide"
     >
-      <div className="relative h-full w-full rounded-[2rem] border-[6px] border-[#e8eef5] bg-white p-5 text-slate-950 shadow-inner">
-        <div className="absolute left-1/2 top-3 h-6 w-28 -translate-x-1/2 rounded-b-2xl bg-[#d9dde5]" />
-        <div className="mt-7 flex items-center justify-between text-[10px] font-bold text-slate-500">
+      <div className="relative h-full w-full overflow-hidden rounded-[2rem] border-[6px] border-[#e8eef5] bg-white p-5 text-slate-950 shadow-inner">
+        <div className="absolute left-1/2 top-0 h-7 w-28 -translate-x-1/2 rounded-b-2xl bg-[#d9dde5]" />
+        <div className="mt-8 flex items-center justify-between text-[10px] font-bold text-slate-500">
           <span>...</span>
           <span className="h-2 w-5 rounded-sm border border-slate-300" />
         </div>
 
-        <div className="mt-7 flex items-center justify-between">
-          <span className="text-2xl font-black leading-none">Lantana Verify</span>
+        <div className="mt-5 flex items-center justify-between">
+          <span className="text-xl font-black leading-none">Lantana Verify</span>
           <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100">
             <ShieldCheck className="h-5 w-5 text-emerald-700" />
           </span>
@@ -90,26 +90,26 @@ function HeroPhoneMockup() {
           Controle terrain
         </p>
 
-        <div className="mt-7 rounded-lg border border-emerald-100 bg-emerald-50 p-5 text-center">
-          <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full border-[7px] border-emerald-500 text-emerald-600">
-            <CheckCircle2 className="h-14 w-14" />
+        <div className="mt-5 rounded-lg border border-emerald-100 bg-emerald-50 p-4 text-center">
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border-[6px] border-emerald-500 text-emerald-600">
+            <CheckCircle2 className="h-11 w-11" />
           </div>
-          <p className="mt-5 rounded-lg bg-emerald-600 px-4 py-3 text-lg font-black text-white">
+          <p className="mt-4 rounded-lg bg-emerald-600 px-4 py-3 text-base font-black text-white">
             ACCES VALIDE
           </p>
         </div>
 
-        <div className="mt-5 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="mt-4 rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-800">
-              <Leaf className="h-6 w-6" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-800">
+              <Leaf className="h-5 w-5" />
             </div>
             <div>
               <p className="text-sm font-black">Equipe paysage</p>
               <p className="text-xs font-semibold text-slate-500">Intervention autorisee</p>
             </div>
           </div>
-          <div className="mx-auto mt-4 grid h-28 w-28 grid-cols-5 gap-1 rounded-lg bg-white p-2 shadow-inner">
+          <div className="mx-auto mt-3 grid h-20 w-20 grid-cols-5 gap-1 rounded-lg bg-white p-2 shadow-inner">
             {Array.from({ length: 25 }).map((_, index) => (
               <span
                 key={index}
@@ -123,15 +123,15 @@ function HeroPhoneMockup() {
           </div>
         </div>
 
-        <div className="absolute inset-x-5 bottom-5 rounded-lg bg-[#4338e8] p-4 text-white">
-          <div className="mb-4 grid grid-cols-3 gap-2 text-center text-[11px] font-bold">
+        <div className="absolute inset-x-5 bottom-5 rounded-lg bg-[#4338e8] p-3 text-white">
+          <div className="mb-3 grid grid-cols-3 gap-2 text-center text-[10px] font-bold">
             <span>QR</span>
             <span>Statut</span>
             <span>Trace</span>
           </div>
           <Link
             href="/login"
-            className="flex h-10 items-center justify-center rounded-lg bg-white text-xs font-black uppercase tracking-[0.08em] text-[#4338e8]"
+            className="flex h-9 items-center justify-center rounded-lg bg-white text-xs font-black uppercase tracking-[0.08em] text-[#4338e8]"
           >
             Confirmer
           </Link>
@@ -238,7 +238,7 @@ export default function MarketingPage() {
             <div className="absolute right-10 top-0">
               <HeroPhoneMockup />
             </div>
-            <div className="absolute bottom-16 left-2 w-80 rounded-lg border border-white/15 bg-white p-5 text-slate-950 shadow-2xl">
+            <div className="absolute bottom-8 left-0 w-72 rounded-lg border border-white/15 bg-white p-4 text-slate-950 shadow-2xl">
               <div className="flex items-center gap-4">
                 <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
                   <CheckCircle2 className="h-7 w-7" />
