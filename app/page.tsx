@@ -40,21 +40,21 @@ const featureCards = [
 const processItems = [
   {
     icon: "/sassbeyond/business_icon01.png",
-    image: "/sassbeyond/business_img01.png",
+    image: "/lantana-verify/dashboard-authorizations.png",
     title: "Centralisez les collaborateurs",
     text: "Importez vos equipes, associez-les aux agences, aux entreprises du groupe et aux missions terrain.",
     reverse: false,
   },
   {
     icon: "/sassbeyond/business_icon02.png",
-    image: "/sassbeyond/business_img02.png",
+    image: "/lantana-verify/access-rights-badge.png",
     title: "Attribuez les droits d'acces",
     text: "Definissez les dates de validite, les statuts et les suspensions depuis un espace unique.",
     reverse: true,
   },
   {
     icon: "/sassbeyond/business_icon03.png",
-    image: "/sassbeyond/business_img03.png",
+    image: "/lantana-verify/field-qr-scan.png",
     title: "Verifiez sur chantier",
     text: "Les encadrants ou clients scannent le QR code et voient instantanement si l'acces est conforme.",
     reverse: false,
@@ -162,12 +162,12 @@ export default function MarketingPage() {
 
           <div className="relative hidden min-h-[600px] lg:block">
             <Image
-              src="/sassbeyond/banner_app.png"
-              alt="Interface mobile Lantana Verify"
-              width={650}
-              height={780}
+              src="/lantana-verify/phone-access-valid.png"
+              alt="Telephone affichant un acces valide Lantana Verify"
+              width={896}
+              height={1792}
               priority
-              className="absolute right-0 top-4 h-auto w-[88%] drop-shadow-[0_42px_70px_rgba(0,0,0,0.38)]"
+              className="absolute right-6 top-0 h-[590px] w-auto rounded-[2.2rem] object-contain drop-shadow-[0_42px_70px_rgba(0,0,0,0.38)]"
             />
             <div className="absolute bottom-16 left-2 w-80 rounded-lg border border-white/15 bg-white p-5 text-slate-950 shadow-2xl">
               <div className="flex items-center gap-4">
@@ -189,11 +189,11 @@ export default function MarketingPage() {
       <section id="fonctionnalites" className="relative bg-white py-20 sm:py-28">
         <div className="pointer-events-none absolute -right-28 top-16 hidden w-72 opacity-25 lg:block">
           <Image
-            src="/sassbeyond/overlay_phone01.png"
+            src="/lantana-verify/phone-access-valid.png"
             alt=""
-            width={420}
-            height={640}
-            className="h-auto w-full"
+            width={896}
+            height={1792}
+            className="h-auto w-full rounded-[2rem]"
           />
         </div>
 
@@ -295,13 +295,13 @@ export default function MarketingPage() {
 
       <section id="preuve" className="relative overflow-hidden bg-white py-20 sm:py-28">
         <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-[0.55fr_1fr] lg:px-8">
-          <div className="hidden lg:block">
+          <div className="hidden overflow-hidden rounded-lg shadow-[0_30px_80px_rgba(15,23,42,0.14)] lg:block">
             <Image
-              src="/sassbeyond/quote_icon.png"
-              alt=""
-              width={220}
-              height={170}
-              className="h-auto w-56"
+              src="/lantana-verify/field-qr-scan.png"
+              alt="Controle QR code valide sur chantier"
+              width={760}
+              height={430}
+              className="h-full w-full object-cover"
             />
           </div>
 
