@@ -1,5 +1,6 @@
 import { cookies, headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
+import { verifyCaptchaToken } from "@/lib/captcha";
 import { verifyPassword } from "@/lib/password";
 import { createSessionToken, SESSION_COOKIE } from "@/lib/session";
 
@@ -40,7 +41,13 @@ export async function POST(req: Request) {
   const body = await req.json();
   const email = normalizeEmail(body.email);
   const password = normalize(body.password);
-  const mfaCode = normalize(body.mfaCode);
+  const captchaAnswer = normalize(body.captchaAnswer);
+  const captchaToken = normalize(body.captchaToken);
+
+  if (!verifyCaptchaToken(captchaToken, captchaAnswer)) {
+    await logAttempt({ email, success: false, reason: "invalid_captcha" });
+    return Response.json({ ok: false, reason: "invalid_captcha" }, { status: 401 });
+  }
 
   const user = await prisma.appUser.findUnique({
     where: { email },
@@ -49,11 +56,6 @@ export async function POST(req: Request) {
   if (!user || !user.isActive || !verifyPassword(password, user.passwordHash)) {
     await logAttempt({ userId: user?.id, email, success: false, reason: "invalid_credentials" });
     return Response.json({ ok: false, reason: "invalid_credentials" }, { status: 401 });
-  }
-
-  if (user.mfaEnabled && !verifyPassword(mfaCode, user.mfaCodeHash)) {
-    await logAttempt({ userId: user.id, email, success: false, reason: "invalid_mfa" });
-    return Response.json({ ok: false, reason: "invalid_mfa" }, { status: 401 });
   }
 
   await logAttempt({ userId: user.id, email, success: true });

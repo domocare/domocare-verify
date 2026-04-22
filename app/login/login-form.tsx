@@ -2,14 +2,69 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
-import { ArrowLeft, CheckCircle2, Leaf, LockKeyhole, QrCode, ShieldCheck } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Leaf,
+  LockKeyhole,
+  QrCode,
+  RefreshCw,
+  ShieldCheck,
+} from "lucide-react";
 import CompanyLogo from "@/components/company-logo";
 import { companyBrands } from "@/lib/company-branding";
 
 export default function LoginForm() {
-  const [form, setForm] = useState({ email: "", password: "", mfaCode: "" });
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+    captchaAnswer: "",
+    captchaToken: "",
+  });
+  const [captchaQuestion, setCaptchaQuestion] = useState("");
+  const [captchaLoading, setCaptchaLoading] = useState(true);
   const [message, setMessage] = useState<string | null>(null);
+
+  async function loadCaptcha() {
+    setCaptchaLoading(true);
+
+    const res = await fetch("/api/auth/captcha", { cache: "no-store" });
+    const data = (await res.json()) as { question?: string; token?: string };
+
+    setCaptchaQuestion(data.question || "");
+    setForm((current) => ({
+      ...current,
+      captchaAnswer: "",
+      captchaToken: data.token || "",
+    }));
+    setCaptchaLoading(false);
+  }
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadInitialCaptcha() {
+      const res = await fetch("/api/auth/captcha", { cache: "no-store" });
+      const data = (await res.json()) as { question?: string; token?: string };
+
+      if (!isMounted) return;
+
+      setCaptchaQuestion(data.question || "");
+      setForm((current) => ({
+        ...current,
+        captchaAnswer: "",
+        captchaToken: data.token || "",
+      }));
+      setCaptchaLoading(false);
+    }
+
+    void loadInitialCaptcha();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -22,7 +77,13 @@ export default function LoginForm() {
     });
 
     if (!res.ok) {
-      setMessage("Connexion impossible. Verifie les identifiants et le code MFA si demande.");
+      const data = (await res.json().catch(() => null)) as { reason?: string } | null;
+      setMessage(
+        data?.reason === "invalid_captcha"
+          ? "Captcha incorrect ou expire. Reessayez avec le nouveau calcul."
+          : "Connexion impossible. Verifie les identifiants et le captcha."
+      );
+      void loadCaptcha();
       return;
     }
 
@@ -157,15 +218,37 @@ export default function LoginForm() {
                 required
               />
             </label>
-            <label className="grid gap-2 text-sm font-bold text-slate-700">
-              Code MFA
-              <input
-                value={form.mfaCode}
-                onChange={(e) => setForm({ ...form, mfaCode: e.target.value })}
-                className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 font-normal outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-100"
-                placeholder="Si active sur votre compte"
-              />
-            </label>
+            <div className="grid gap-2 text-sm font-bold text-slate-700">
+              Captcha
+              <div className="grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-[0.16em] text-emerald-700">
+                      Verification humaine
+                    </p>
+                    <p className="mt-1 text-lg font-black text-slate-950">
+                      {captchaLoading ? "Chargement..." : `${captchaQuestion} = ?`}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => void loadCaptcha()}
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:border-emerald-300 hover:text-emerald-700"
+                    aria-label="Changer le captcha"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                  </button>
+                </div>
+                <input
+                  inputMode="numeric"
+                  value={form.captchaAnswer}
+                  onChange={(e) => setForm({ ...form, captchaAnswer: e.target.value })}
+                  className="rounded-lg border border-slate-200 bg-white px-4 py-3 font-normal outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+                  placeholder="Resultat du calcul"
+                  required
+                />
+              </div>
+            </div>
 
             {message ? (
               <p className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
@@ -175,6 +258,7 @@ export default function LoginForm() {
 
             <button
               type="submit"
+              disabled={captchaLoading || !form.captchaToken}
               className="mt-2 inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-500 px-4 py-4 font-black text-slate-950 transition hover:bg-emerald-400"
             >
               Se connecter
