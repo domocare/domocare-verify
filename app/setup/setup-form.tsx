@@ -22,7 +22,7 @@ export default function SetupForm() {
     });
 
     if (!res.ok) {
-      setMessage("Initialisation impossible. Un utilisateur existe peut-etre deja.");
+      setMessage("Initialisation impossible. Un utilisateur existe peut-être déjà.");
       return;
     }
 
@@ -41,7 +41,7 @@ export default function SetupForm() {
               value={form.firstName}
               onChange={(e) => setForm({ ...form, firstName: e.target.value })}
               className="rounded-lg border px-4 py-3"
-              placeholder="Prenom"
+              placeholder="Prénom"
               required
             />
             <input

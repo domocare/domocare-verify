@@ -52,7 +52,7 @@ export default function EmployeeExcelActions() {
         <div>
           <h2 className="text-xl font-semibold">Import / export Excel</h2>
           <p className="mt-1 text-sm text-slate-500">
-            Telechargez le modele, completez les lignes, puis importez le fichier .xlsx.
+            Téléchargez le modèle, complétez les lignes, puis importez le fichier .xlsx.
           </p>
         </div>
 
@@ -91,7 +91,7 @@ export default function EmployeeExcelActions() {
         >
           {result.ok ? (
             <p>
-              Import termine : {result.created || 0} cree(s), {result.updated || 0} mis a jour,
+              Import terminé : {result.created || 0} créé(s), {result.updated || 0} mis à jour,
               {" "}
               {result.skipped || 0} ignore(s).
             </p>

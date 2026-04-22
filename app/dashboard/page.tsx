@@ -64,8 +64,8 @@ export default async function DashboardPage() {
 
   return (
     <BackofficeShell
-      title="Controle d'habilitation par QR code"
-      subtitle="Back-office Domocare / Lantana pour verifier, securiser et tracer les interventions terrain."
+      title="Contrôle d'habilitation par QR code"
+      subtitle="Back-office Domocare / Lantana pour vérifier, sécuriser et tracer les interventions terrain."
       actions={
         <>
           <Link href="/employees" className="rounded-lg border bg-black px-4 py-2 text-white">

@@ -45,8 +45,8 @@ const navSections = [
   {
     label: "Administration",
     items: [
-      { href: "/security", label: "Securite", icon: ShieldCheck },
-      { href: "/settings", label: "Parametrage", icon: Settings },
+      { href: "/security", label: "Sécurité", icon: ShieldCheck },
+      { href: "/settings", label: "Paramétrage", icon: Settings },
     ],
   },
 ];
@@ -73,7 +73,7 @@ export default function BackofficeShell({
                   Lantana Verify
                 </span>
                 <span className="block text-xs font-bold uppercase tracking-[0.18em] text-[#006b55]">
-                  Controle terrain
+                  Contrôle terrain
                 </span>
               </span>
             </Link>
@@ -88,7 +88,7 @@ export default function BackofficeShell({
                 <div>
                   <p className="text-sm font-bold text-slate-950">Back-office</p>
                   <p className="text-xs font-medium text-slate-500">
-                    Acces QR, preuves et equipes
+                    Accès QR, preuves et équipes
                   </p>
                 </div>
               </div>
@@ -135,7 +135,7 @@ export default function BackofficeShell({
                 <div>
                   <p className="text-sm font-bold">Besoin d&apos;assistance ?</p>
                   <p className="mt-1 text-xs leading-5 text-slate-300">
-                    Controlez les acces, cartes et exports depuis un espace unifie.
+                    Contrôlez les accès, cartes et exports depuis un espace unifié.
                   </p>
                 </div>
               </div>
@@ -146,7 +146,7 @@ export default function BackofficeShell({
                 className="flex w-full items-center justify-center gap-2 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm font-bold text-red-700 transition hover:bg-red-100"
               >
                 <LogOut className="h-4 w-4" />
-                Deconnexion
+                Déconnexion
               </button>
             </form>
           </div>
@@ -172,7 +172,7 @@ export default function BackofficeShell({
                 <button
                   type="submit"
                   className="flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600"
-                  aria-label="Deconnexion"
+                  aria-label="Déconnexion"
                 >
                   <LogOut className="h-5 w-5" />
                 </button>

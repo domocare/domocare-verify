@@ -128,7 +128,7 @@ export default function SettingsClient() {
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      setMessage("Le logo doit etre une image.");
+      setMessage("Le logo doit être une image.");
       e.target.value = "";
       return;
     }
@@ -160,7 +160,7 @@ export default function SettingsClient() {
     });
 
     if (!res.ok) {
-      setMessage(await readError(res, "La societe n'a pas pu etre enregistree."));
+      setMessage(await readError(res, "La société n'a pas pu être enregistrée."));
       return;
     }
 
@@ -180,7 +180,7 @@ export default function SettingsClient() {
     });
 
     if (!res.ok) {
-      setMessage(await readError(res, "L'agence n'a pas pu etre enregistree."));
+      setMessage(await readError(res, "L'agence n'a pas pu être enregistrée."));
       return;
     }
 
@@ -190,7 +190,7 @@ export default function SettingsClient() {
   }
 
   async function deleteCompany(company: CompanyItem) {
-    if (!window.confirm(`Supprimer la societe "${company.name}" ?`)) return;
+    if (!window.confirm(`Supprimer la société "${company.name}" ?`)) return;
 
     setMessage(null);
 
@@ -201,7 +201,7 @@ export default function SettingsClient() {
     });
 
     if (!res.ok) {
-      setMessage(await readError(res, "La societe n'a pas pu etre supprimee."));
+      setMessage(await readError(res, "La société n'a pas pu être supprimée."));
       return;
     }
 
@@ -220,7 +220,7 @@ export default function SettingsClient() {
     });
 
     if (!res.ok) {
-      setMessage(await readError(res, "L'agence n'a pas pu etre supprimee."));
+      setMessage(await readError(res, "L'agence n'a pas pu être supprimée."));
       return;
     }
 
@@ -257,7 +257,7 @@ export default function SettingsClient() {
         <section className="rounded-lg border bg-white p-5 shadow-sm">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <h2 className="text-xl font-semibold">Societe</h2>
+              <h2 className="text-xl font-semibold">Société</h2>
               <p className="mt-1 text-sm text-slate-500">Identite, logo et coordonnees groupe.</p>
             </div>
             {editingCompanyId ? (
@@ -279,14 +279,14 @@ export default function SettingsClient() {
               value={companyForm.name}
               onChange={(e) => setCompanyForm({ ...companyForm, name: e.target.value })}
               className="rounded-lg border px-4 py-3"
-              placeholder="Nom de la societe"
+              placeholder="Nom de la société"
               required
             />
 
             <div className="grid gap-3 sm:grid-cols-[140px_1fr]">
               <div className="flex h-28 items-center justify-center rounded-lg border bg-slate-50 p-3">
                 {companyForm.logoUrl ? (
-                  <img src={companyForm.logoUrl} alt="Logo societe" className="max-h-20 w-auto object-contain" />
+                  <img src={companyForm.logoUrl} alt="Logo société" className="max-h-20 w-auto object-contain" />
                 ) : (
                   <span className="text-sm text-slate-400">Logo</span>
                 )}
@@ -314,7 +314,7 @@ export default function SettingsClient() {
               value={companyForm.address}
               onChange={(e) => setCompanyForm({ ...companyForm, address: e.target.value })}
               className="min-h-24 rounded-lg border px-4 py-3"
-              placeholder="Adresse de la societe"
+              placeholder="Adresse de la société"
             />
 
             <div className="grid gap-3 sm:grid-cols-3">
@@ -322,7 +322,7 @@ export default function SettingsClient() {
                 value={companyForm.phone}
                 onChange={(e) => setCompanyForm({ ...companyForm, phone: e.target.value })}
                 className="rounded-lg border px-4 py-3"
-                placeholder="Telephone"
+                placeholder="Téléphone"
               />
               <input
                 type="email"
@@ -340,7 +340,7 @@ export default function SettingsClient() {
             </div>
 
             <button type="submit" className="rounded-lg bg-black px-4 py-3 text-sm font-semibold text-white">
-              {editingCompanyId ? "Enregistrer la societe" : "Ajouter la societe"}
+              {editingCompanyId ? "Enregistrer la société" : "Ajouter la société"}
             </button>
           </form>
         </section>
@@ -350,7 +350,7 @@ export default function SettingsClient() {
             <div>
               <h2 className="text-xl font-semibold">Agence / site</h2>
               <p className="mt-1 text-sm text-slate-500">
-                Rattachement a une societe et coordonnees utilisees par defaut.
+                Rattachement à une société et coordonnées utilisées par défaut.
               </p>
             </div>
             {editingAgencyId ? (
@@ -381,7 +381,7 @@ export default function SettingsClient() {
               className="rounded-lg border px-4 py-3"
               required
             >
-              <option value="">Rattacher a une societe</option>
+              <option value="">Rattacher à une société</option>
               {companies.map((company) => (
                 <option key={company.id} value={company.id}>
                   {company.name}
@@ -399,7 +399,7 @@ export default function SettingsClient() {
                 value={agencyForm.phone}
                 onChange={(e) => setAgencyForm({ ...agencyForm, phone: e.target.value })}
                 className="rounded-lg border px-4 py-3"
-                placeholder="Telephone agence"
+                placeholder="Téléphone agence"
               />
               <input
                 type="email"
@@ -424,8 +424,8 @@ export default function SettingsClient() {
 
       <div className="grid gap-5 xl:grid-cols-2">
         <ReferenceList
-          title="Societes enregistrees"
-          emptyLabel="Aucune societe parametree."
+          title="Sociétés enregistrées"
+          emptyLabel="Aucune société paramétrée."
           items={companies}
           renderMeta={(company) => [company.director, company.phone, company.email].filter(Boolean).join(" - ")}
           renderLogo={(company) => company.logoUrl}
@@ -435,11 +435,11 @@ export default function SettingsClient() {
 
         <ReferenceList
           title="Agences / sites enregistres"
-          emptyLabel="Aucune agence parametree."
+          emptyLabel="Aucune agence paramétrée."
           items={agencies}
           renderMeta={(agency) =>
             [
-              agency.company?.name || "Aucune societe rattachee",
+              agency.company?.name || "Aucune société rattachée",
               agency.director,
               agency.phone,
               agency.email,

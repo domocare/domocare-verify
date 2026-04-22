@@ -215,7 +215,7 @@ export default function EmployeeCardExport({
 
     ctx.fillStyle = "#64748b";
     ctx.font = "500 19px Arial, sans-serif";
-    ctx.fillText("Carte d'intervention securisee par QR code", 76, 124);
+    ctx.fillText("Carte d'intervention sécurisée par QR code", 76, 124);
 
     if (logo) {
       drawContainImage(ctx, logo, 132, 154, 270, 92);
@@ -353,16 +353,16 @@ export default function EmployeeCardExport({
           <main class="card">
             <section>
               <div class="brand">Lantana Verify</div>
-              <div class="subtitle">Carte d'intervention securisee par QR code</div>
+              <div class="subtitle">Carte d'intervention sécurisée par QR code</div>
               <div class="logo-wrap"><img class="logo" src="${escaped.logoUrl}" alt="Logo"></div>
               <h1>${escaped.fullName}</h1>
               <div class="job">${escaped.jobTitle}</div>
               <dl>
-                <div><dt>Societe</dt><dd>${escaped.company}</dd></div>
+                <div><dt>Société</dt><dd>${escaped.company}</dd></div>
                 <div><dt>Agence</dt><dd>${escaped.agency}</dd></div>
                 <div><dt>Validite</dt><dd>${escaped.validUntil}</dd></div>
                 <div><dt>Intervention</dt><dd>${escaped.interventionType}</dd></div>
-                <div><dt>Vehicule</dt><dd>${escaped.vehiclePlate}</dd></div>
+                <div><dt>Véhicule</dt><dd>${escaped.vehiclePlate}</dd></div>
                 <div><dt>Site</dt><dd>${escaped.authorizedSite}</dd></div>
               </dl>
             </section>

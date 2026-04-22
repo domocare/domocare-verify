@@ -14,26 +14,26 @@ const featureCards = [
   {
     icon: "/sassbeyond/features_icon01.png",
     tone: "bg-[#fff7d7]",
-    title: "Controle QR code",
-    text: "Un scan suffit pour verifier si un intervenant est autorise sur site.",
+    title: "Contrôle QR code",
+    text: "Un scan suffit pour vérifier si un intervenant est autorisé sur site.",
   },
   {
     icon: "/sassbeyond/features_icon02.png",
     tone: "bg-[#efe7ff]",
-    title: "Habilitations a jour",
-    text: "Suivez les statuts actifs, expires ou suspendus sans fichier eparpille.",
+    title: "Habilitations à jour",
+    text: "Suivez les statuts actifs, expirés ou suspendus sans fichier éparpillé.",
   },
   {
     icon: "/sassbeyond/features_icon03.png",
     tone: "bg-[#e2f4ff]",
     title: "Preuve de passage",
-    text: "Chaque verification terrain devient une trace exploitable par l'agence.",
+    text: "Chaque vérification terrain devient une trace exploitable par l'agence.",
   },
   {
     icon: "/sassbeyond/features_icon04.png",
     tone: "bg-[#ffe8de]",
-    title: "Acces securise",
-    text: "Le back-office reste reserve aux responsables et administrateurs.",
+    title: "Accès sécurisé",
+    text: "Le back-office reste réservé aux responsables et administrateurs.",
   },
 ];
 
@@ -42,36 +42,36 @@ const processItems = [
     icon: "/sassbeyond/business_icon01.png",
     image: "/lantana-verify/dashboard-authorizations.png",
     title: "Centralisez les collaborateurs",
-    text: "Importez vos equipes, associez-les aux agences, aux entreprises du groupe et aux missions terrain.",
+    text: "Importez vos équipes, associez-les aux agences, aux entreprises du groupe et aux missions terrain.",
     reverse: false,
   },
   {
     icon: "/sassbeyond/business_icon02.png",
     image: "/lantana-verify/access-rights-badge.png",
-    title: "Attribuez les droits d'acces",
-    text: "Definissez les dates de validite, les statuts et les suspensions depuis un espace unique.",
+    title: "Attribuez les droits d'accès",
+    text: "Définissez les dates de validité, les statuts et les suspensions depuis un espace unique.",
     reverse: true,
   },
   {
     icon: "/sassbeyond/business_icon03.png",
     image: "/lantana-verify/field-qr-scan.png",
-    title: "Verifiez sur chantier",
-    text: "Les encadrants ou clients scannent le QR code et voient instantanement si l'acces est conforme.",
+    title: "Vérifiez sur chantier",
+    text: "Les encadrants ou clients scannent le QR code et voient instantanément si l'accès est conforme.",
     reverse: false,
   },
 ];
 
 const metrics = [
-  ["30 sec", "controle terrain"],
-  ["24/7", "verification disponible"],
-  ["1 outil", "pour agences et siege"],
+  ["30 sec", "contrôle terrain"],
+  ["24/7", "vérification disponible"],
+  ["1 outil", "pour agences et siège"],
 ];
 
 function HeroPhoneMockup() {
   return (
     <div
       className="relative mx-auto h-[610px] w-[320px] rounded-[2.1rem] bg-[#4338e8] p-[14px] shadow-[0_42px_80px_rgba(0,0,0,0.42)]"
-      aria-label="Telephone affichant un acces valide"
+      aria-label="Téléphone affichant un accès valide"
     >
       <div className="relative h-full w-full overflow-hidden rounded-[2rem] border-[6px] border-[#e8eef5] bg-white p-5 text-slate-950 shadow-inner">
         <div className="absolute left-1/2 top-0 h-7 w-28 -translate-x-1/2 rounded-b-2xl bg-[#d9dde5]" />
@@ -87,7 +87,7 @@ function HeroPhoneMockup() {
           </span>
         </div>
         <p className="mt-1 text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">
-          Controle terrain
+          Contrôle terrain
         </p>
 
         <div className="mt-5 rounded-lg border border-emerald-100 bg-emerald-50 p-4 text-center">
@@ -95,7 +95,7 @@ function HeroPhoneMockup() {
             <CheckCircle2 className="h-11 w-11" />
           </div>
           <p className="mt-4 rounded-lg bg-emerald-600 px-4 py-3 text-base font-black text-white">
-            ACCES VALIDE
+            ACCÈS VALIDÉ
           </p>
         </div>
 
@@ -105,8 +105,8 @@ function HeroPhoneMockup() {
               <Leaf className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-sm font-black">Equipe paysage</p>
-              <p className="text-xs font-semibold text-slate-500">Intervention autorisee</p>
+              <p className="text-sm font-black">Équipe paysage</p>
+              <p className="text-xs font-semibold text-slate-500">Intervention autorisée</p>
             </div>
           </div>
           <div className="mx-auto mt-4 grid h-24 w-24 grid-cols-5 gap-1 rounded-lg bg-white p-2 shadow-inner">
@@ -146,7 +146,7 @@ export default function MarketingPage() {
 
           <nav className="hidden items-center gap-8 text-sm font-bold text-white/80 md:flex">
             <a href="#fonctionnalites" className="transition hover:text-white">
-              Fonctionnalites
+              Fonctionnalités
             </a>
             <a href="#process" className="transition hover:text-white">
               Process
@@ -180,15 +180,15 @@ export default function MarketingPage() {
           <div className="max-w-3xl">
             <div className="mb-6 inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/10 px-4 py-3 text-sm font-bold text-emerald-50">
               <Leaf className="h-4 w-4 text-emerald-300" />
-              Logiciel de controle d&apos;acces pour les entreprises du paysage
+              Logiciel de contrôle d&apos;accès pour les entreprises du paysage
             </div>
 
             <h1 className="text-5xl font-black leading-[1.02] tracking-tight sm:text-6xl lg:text-7xl">
-              Controlez vos acces terrain en temps reel.
+              Contrôlez vos accès terrain en temps réel.
             </h1>
             <p className="mt-7 max-w-2xl text-lg leading-8 text-slate-100 sm:text-xl">
-              Lantana Verify adapte le principe du template SassBeyond a votre metier:
-              habilitations, QR codes, scans, preuves de controle et pilotage multi-agences.
+              Lantana Verify adapte le principe du template SassBeyond à votre métier :
+              habilitations, QR codes, scans, preuves de contrôle et pilotage multi-agences.
             </p>
 
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
@@ -196,14 +196,14 @@ export default function MarketingPage() {
                 href="/login"
                 className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-400 px-6 py-4 text-sm font-black text-slate-950 transition hover:bg-emerald-300"
               >
-                Acceder au logiciel
+                Accéder au logiciel
                 <LockKeyhole className="h-4 w-4" />
               </Link>
               <a
                 href="#fonctionnalites"
                 className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/25 px-6 py-4 text-sm font-black text-white transition hover:bg-white/10"
               >
-                Decouvrir
+                Découvrir
                 <ArrowDown className="h-4 w-4" />
               </a>
             </div>
@@ -232,10 +232,10 @@ export default function MarketingPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-4xl text-center">
             <p className="text-sm font-black uppercase tracking-[0.22em] text-emerald-700">
-              Fonctionnalites
+              Fonctionnalités
             </p>
             <h2 className="mt-4 text-4xl font-black tracking-tight sm:text-5xl">
-              Les services essentiels du controle d&apos;acces terrain.
+              Les services essentiels du contrôle d&apos;accès terrain.
             </h2>
           </div>
 
@@ -274,14 +274,14 @@ export default function MarketingPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-4xl text-center">
             <p className="text-sm font-black uppercase tracking-[0.22em] text-emerald-700">
-              Process metier
+              Process métier
             </p>
             <h2 className="mt-4 text-4xl font-black tracking-tight sm:text-5xl">
-              Du siege au chantier, le controle reste simple.
+              Du siège au chantier, le contrôle reste simple.
             </h2>
             <p className="mt-5 text-lg leading-8 text-slate-600">
-              Le template est adapte pour presenter une application SaaS claire: un parcours
-              court, des preuves visibles et une entree directe vers la connexion.
+              Le template est adapté pour présenter une application SaaS claire : un parcours
+              court, des preuves visibles et une entrée directe vers la connexion.
             </p>
           </div>
 
@@ -330,7 +330,7 @@ export default function MarketingPage() {
           <div className="hidden overflow-hidden rounded-lg shadow-[0_30px_80px_rgba(15,23,42,0.14)] lg:block">
             <Image
               src="/lantana-verify/proof-access-control.png"
-              alt="Preuve de controle d'acces valide sur chantier"
+              alt="Preuve de contrôle d'accès valide sur chantier"
               width={760}
               height={430}
               className="h-full w-full object-cover"
@@ -339,10 +339,10 @@ export default function MarketingPage() {
 
           <div>
             <h2 className="text-4xl font-black tracking-tight sm:text-5xl">
-              Une preuve lisible pour chaque controle.
+              Une preuve lisible pour chaque contrôle.
             </h2>
             <p className="mt-6 text-2xl font-semibold leading-10 text-slate-700">
-              Les equipes terrain savent immediatement si l&apos;intervenant est autorise.
+              Les équipes terrain savent immédiatement si l&apos;intervenant est autorisé.
               Les responsables gardent une vision fiable des scans, statuts et alertes.
             </p>
 
@@ -351,7 +351,7 @@ export default function MarketingPage() {
                 <QrCode className="h-7 w-7" />
               </span>
               <div>
-                <p className="font-black">Verification QR code</p>
+                <p className="font-black">Vérification QR code</p>
                 <p className="text-sm font-semibold text-slate-500">
                   Pour agences, encadrants et clients du Groupe Lantana
                 </p>
@@ -375,14 +375,14 @@ export default function MarketingPage() {
               Lantana Verify
             </p>
             <h2 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">
-              Accedez au logiciel de controle d&apos;acces.
+              Accédez au logiciel de contrôle d&apos;accès.
             </h2>
           </div>
           <Link
             href="/login"
             className="inline-flex items-center justify-center gap-2 rounded-lg bg-white px-6 py-4 text-sm font-black text-slate-950 transition hover:bg-emerald-100"
           >
-            Connexion securisee
+            Connexion sécurisée
             <LockKeyhole className="h-4 w-4" />
           </Link>
         </div>
@@ -391,14 +391,14 @@ export default function MarketingPage() {
       <footer className="bg-white py-8">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 text-sm text-slate-500 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
           <p className="font-semibold text-slate-700">
-            Lantana Verify - Controle d&apos;acces paysage
+            Lantana Verify - Contrôle d&apos;accès paysage
           </p>
           <div className="flex gap-4">
             <Link href="/login" className="font-bold text-slate-900 hover:text-emerald-700">
               Connexion
             </Link>
             <Link href="/verify" className="font-bold text-slate-900 hover:text-emerald-700">
-              Verification QR
+              Vérification QR
             </Link>
           </div>
         </div>

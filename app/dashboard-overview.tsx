@@ -62,7 +62,7 @@ function formatDate(value: string) {
 function statusMeta(status?: string | null) {
   if (status === "active") {
     return {
-      label: "Autorise",
+      label: "Autorisé",
       full: "Habilitation valide",
       className: "border-emerald-200 bg-emerald-50 text-emerald-700",
       icon: CheckCircle2,
@@ -72,7 +72,7 @@ function statusMeta(status?: string | null) {
   if (status === "expired") {
     return {
       label: "Expire",
-      full: "Habilitation expiree",
+      full: "Habilitation expirée",
       className: "border-amber-200 bg-amber-50 text-amber-700",
       icon: CalendarClock,
     };
@@ -88,8 +88,8 @@ function statusMeta(status?: string | null) {
   }
 
   return {
-    label: "A verifier",
-    full: "Statut a verifier",
+    label: "À vérifier",
+    full: "Statut à vérifier",
     className: "border-slate-200 bg-slate-50 text-slate-700",
     icon: AlertTriangle,
   };
@@ -139,10 +139,10 @@ export default function DashboardOverview({
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-        <Metric title="Collaborateurs" value={stats.employees} subtitle="Toutes entites" icon={Users} />
+        <Metric title="Collaborateurs" value={stats.employees} subtitle="Toutes entités" icon={Users} />
         <Metric title="Valides" value={stats.active} subtitle="Autorisations actives" icon={ShieldCheck} tone="emerald" />
-        <Metric title="Expires" value={stats.expired} subtitle="A renouveler" icon={CalendarClock} tone="amber" />
-        <Metric title="Suspendus" value={stats.suspended} subtitle="Acces bloques" icon={AlertTriangle} tone="red" />
+        <Metric title="Expirés" value={stats.expired} subtitle="À renouveler" icon={CalendarClock} tone="amber" />
+        <Metric title="Suspendus" value={stats.suspended} subtitle="Accès bloqués" icon={AlertTriangle} tone="red" />
         <Metric title="Scans" value={stats.scans} subtitle="Journal total" icon={History} />
       </div>
 
@@ -152,7 +152,7 @@ export default function DashboardOverview({
             <div className="flex items-center justify-between gap-3">
               <div>
                 <h2 className="text-xl font-semibold">Recherche collaborateur</h2>
-                <p className="mt-1 text-sm text-slate-500">Nom, societe, agence ou statut.</p>
+                <p className="mt-1 text-sm text-slate-500">Nom, société, agence ou statut.</p>
               </div>
               <div className="rounded-lg bg-slate-100 p-3">
                 <Search className="h-5 w-5 text-slate-600" />
@@ -176,7 +176,7 @@ export default function DashboardOverview({
                 ))
               ) : (
                 <div className="rounded-lg border border-dashed p-4 text-sm text-slate-500">
-                  Aucun collaborateur ne correspond a cette recherche.
+                  Aucun collaborateur ne correspond à cette recherche.
                 </div>
               )}
             </div>
@@ -185,17 +185,17 @@ export default function DashboardOverview({
           <section className="rounded-lg border bg-white p-5 shadow-sm">
             <h2 className="text-xl font-semibold">Actions rapides</h2>
             <div className="mt-4 grid gap-3">
-              <ActionLink href="/employees/new" icon={Plus} title="Creer un collaborateur" subtitle="Ajouter fiche, photo, agence et habilitation" />
-              <ActionLink href="/employees" icon={QrCode} title="Controler les QR codes" subtitle="Ouvrir une fiche puis exporter la carte" />
-              <ActionLink href="/settings" icon={Settings} title="Parametrage" subtitle="Societes, agences et referentiels" />
-              <ActionLink href="/users" icon={Users} title="Gestion des acces" subtitle="Roles responsables et administrateurs" />
+              <ActionLink href="/employees/new" icon={Plus} title="Créer un collaborateur" subtitle="Ajouter fiche, photo, agence et habilitation" />
+              <ActionLink href="/employees" icon={QrCode} title="Contrôler les QR codes" subtitle="Ouvrir une fiche puis exporter la carte" />
+              <ActionLink href="/settings" icon={Settings} title="Paramétrage" subtitle="Sociétés, agences et référentiels" />
+              <ActionLink href="/users" icon={Users} title="Gestion des accès" subtitle="Rôles responsables et administrateurs" />
             </div>
           </section>
         </aside>
 
         <section className="space-y-6">
           <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-            <Panel title="Derniers collaborateurs crees" subtitle="Suivi immediat des nouvelles fiches">
+            <Panel title="Derniers collaborateurs créés" subtitle="Suivi immédiat des nouvelles fiches">
               <div className="space-y-3">
                 {recentEmployees.map((employee) => (
                   <EmployeeWideRow key={employee.id} employee={employee} />
@@ -203,7 +203,7 @@ export default function DashboardOverview({
               </div>
             </Panel>
 
-            <Panel title="Points d'attention" subtitle="A traiter en priorite">
+            <Panel title="Points d'attention" subtitle="À traiter en priorité">
               <div className="space-y-3">
                 {alertEmployees.length > 0 ? (
                   alertEmployees.map((employee) => (
@@ -219,7 +219,7 @@ export default function DashboardOverview({
           </div>
 
           <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-            <Panel title="Derniers scans" subtitle="Resultats publics remontes par QR code">
+            <Panel title="Derniers scans" subtitle="Résultats publics remontés par QR code">
               <div className="space-y-3">
                 {scans.length > 0 ? (
                   scans.map((scan) => (
@@ -227,7 +227,7 @@ export default function DashboardOverview({
                       <div className="min-w-0">
                         <p className="truncate font-mono text-sm text-slate-900">{scan.token}</p>
                         <p className="mt-1 text-xs text-slate-500">
-                          {scan.company || "Societe inconnue"} - {formatDate(scan.createdAt)}
+                          {scan.company || "Société inconnue"} - {formatDate(scan.createdAt)}
                         </p>
                       </div>
                       <span className={`rounded-full px-3 py-1 text-xs font-semibold ${scanClass(scan.result)}`}>
@@ -246,11 +246,11 @@ export default function DashboardOverview({
             <Panel title="Point sur les actions" subtitle="Priorites operationnelles de cette page">
               <div className="grid gap-3 sm:grid-cols-2">
                 <ActionStatus title="Retrouver vite une fiche" status="Disponible" tone="emerald" />
-                <ActionStatus title="Creer un collaborateur" status="Disponible" tone="emerald" />
+                <ActionStatus title="Créer un collaborateur" status="Disponible" tone="emerald" />
                 <ActionStatus title="Suspendre / reactiver" status="Depuis la fiche" tone="emerald" />
                 <ActionStatus title="Exporter carte PNG/PDF" status="Depuis la fiche" tone="emerald" />
                 <ActionStatus title="Consulter les scans" status="Disponible" tone="emerald" />
-                <ActionStatus title="Traiter les anomalies" status="A renforcer" tone="amber" />
+                <ActionStatus title="Traiter les anomalies" status="À renforcer" tone="amber" />
               </div>
             </Panel>
           </div>
@@ -371,7 +371,7 @@ function EmployeeWideRow({ employee }: { employee: DashboardEmployee }) {
             <p className="truncate font-semibold">
               {employee.firstName} {employee.lastName}
             </p>
-            <p className="truncate text-sm text-slate-500">{employee.jobTitle || "Fonction non renseignee"}</p>
+            <p className="truncate text-sm text-slate-500">{employee.jobTitle || "Fonction non renseignée"}</p>
             <p className="truncate text-xs text-slate-400">
               {employee.company || "-"} - {employee.agency || "-"}
             </p>

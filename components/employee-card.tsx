@@ -23,7 +23,7 @@ function badgeClass(status?: string | null) {
 }
 
 function statusLabel(status?: string | null) {
-  if (status === "active") return "Autorise";
+  if (status === "active") return "Autorisé";
   if (status === "expired") return "Expire";
   if (status === "revoked" || status === "suspended") return "Suspendu";
   return "Inconnu";

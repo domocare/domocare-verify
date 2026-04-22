@@ -25,8 +25,8 @@ export default async function SecurityPage() {
 
   return (
     <BackofficeShell
-      title="Securite"
-      subtitle="Journal des connexions et tentatives d'acces."
+      title="Sécurité"
+      subtitle="Journal des connexions et tentatives d'accès."
     >
       {logs ? (
         <div className="rounded-lg border bg-white p-5 shadow-sm">
@@ -57,7 +57,7 @@ export default async function SecurityPage() {
           )}
         </div>
       ) : (
-        <DatabaseErrorPanel title="Journal de securite indisponible" />
+        <DatabaseErrorPanel title="Journal de sécurité indisponible" />
       )}
     </BackofficeShell>
   );

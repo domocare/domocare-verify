@@ -5,7 +5,7 @@ export default function UsersPage() {
   return (
     <BackofficeShell
       title="Utilisateurs"
-      subtitle="Profils internes, roles et perimetres d'acces."
+      subtitle="Profils internes, rôles et périmètres d'accès."
     >
       <UsersClient />
     </BackofficeShell>

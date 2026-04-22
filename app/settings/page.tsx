@@ -4,8 +4,8 @@ import SettingsClient from "./settings-client";
 export default function SettingsPage() {
   return (
     <BackofficeShell
-      title="Parametrage"
-      subtitle="Referentiels utilises dans les fiches collaborateurs."
+      title="Paramétrage"
+      subtitle="Référentiels utilisés dans les fiches collaborateurs."
     >
       <SettingsClient />
     </BackofficeShell>

@@ -26,7 +26,7 @@ type OptionsResponse = {
 
 const roles = [
   { value: "SUPER_ADMIN_GROUP", label: "Super admin groupe" },
-  { value: "SECURITY_ADMIN", label: "Admin securite / conformite" },
+  { value: "SECURITY_ADMIN", label: "Admin sécurité / conformité" },
   { value: "AUDITOR", label: "Pilotage KPI / audit" },
   { value: "AGENCY_ADMIN", label: "Admin entite / agence" },
   { value: "ADMIN_ASSISTANT", label: "Assistant administratif" },
@@ -112,7 +112,7 @@ export default function UsersClient() {
     });
 
     if (!res.ok) {
-      setMessage("Utilisateur non cree. Verifie les champs obligatoires.");
+      setMessage("Utilisateur non créé. Vérifiez les champs obligatoires.");
       return;
     }
 
@@ -138,7 +138,7 @@ export default function UsersClient() {
     });
 
     if (!res.ok) {
-      setMessage("Le statut utilisateur n'a pas pu etre modifie.");
+      setMessage("Le statut utilisateur n'a pas pu être modifié.");
       return;
     }
 
@@ -156,7 +156,7 @@ export default function UsersClient() {
               value={form.firstName}
               onChange={(e) => setForm({ ...form, firstName: e.target.value })}
               className="rounded-lg border px-4 py-3"
-              placeholder="Prenom"
+              placeholder="Prénom"
               required
             />
             <input
@@ -204,7 +204,7 @@ export default function UsersClient() {
             onChange={(e) => setForm({ ...form, company: e.target.value })}
             className="rounded-lg border px-4 py-3"
           >
-            <option value="">Toutes societes</option>
+            <option value="">Toutes sociétés</option>
             {companies.map((company) => (
               <option key={company.id} value={company.name}>
                 {company.name}
@@ -239,7 +239,7 @@ export default function UsersClient() {
               value={form.mfaCode}
               onChange={(e) => setForm({ ...form, mfaCode: e.target.value })}
               className="rounded-lg border px-4 py-3"
-              placeholder="Code MFA a 6 chiffres minimum"
+              placeholder="Code MFA à 6 chiffres minimum"
               minLength={6}
               required
             />
@@ -272,7 +272,7 @@ export default function UsersClient() {
                   </div>
                   <div className="text-sm text-slate-600">{user.email}</div>
                   <div className="mt-1 text-sm text-slate-500">
-                    {roleLabel(user.role)} - {user.company || "Toutes societes"} /{" "}
+                    {roleLabel(user.role)} - {user.company || "Toutes sociétés"} /{" "}
                     {user.agency || "Toutes agences"} - MFA {user.mfaEnabled ? "actif" : "inactif"}
                   </div>
                 </div>

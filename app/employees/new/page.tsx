@@ -57,7 +57,7 @@ export default function NewEmployeePage() {
       const res = await fetch("/api/settings/options");
 
       if (!res.ok) {
-        setSettingsError("Impossible de charger les societes et agences.");
+        setSettingsError("Impossible de charger les sociétés et agences.");
         return;
       }
 
@@ -79,7 +79,7 @@ export default function NewEmployeePage() {
     }
 
     if (!file.type.startsWith("image/")) {
-      setPhotoError("Le fichier doit etre une image.");
+      setPhotoError("Le fichier doit être une image.");
       e.target.value = "";
       return;
     }
@@ -135,7 +135,7 @@ export default function NewEmployeePage() {
           <div className="grid gap-4 md:grid-cols-2">
             <input
               className="w-full border rounded-xl p-3"
-              placeholder="Prenom"
+              placeholder="Prénom"
               value={form.firstName}
               onChange={(e) => setForm({ ...form, firstName: e.target.value })}
               required
@@ -210,7 +210,7 @@ export default function NewEmployeePage() {
                 disabled={!form.company}
               >
                 <option value="">
-                  {form.company ? "Choisir une agence" : "Choisir d'abord une societe"}
+                  {form.company ? "Choisir une agence" : "Choisir d'abord une société"}
                 </option>
                 {filteredAgencies.map((agency) => (
                   <option key={agency.id} value={agency.name}>
@@ -221,13 +221,13 @@ export default function NewEmployeePage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Societe</label>
+              <label className="text-sm font-medium">Société</label>
               <select
                 className="w-full border rounded-xl p-3"
                 value={form.company}
                 onChange={(e) => setForm({ ...form, company: e.target.value, agency: "" })}
               >
-                <option value="">Choisir une societe</option>
+                <option value="">Choisir une société</option>
                 {companies.map((company) => (
                   <option key={company.id} value={company.name}>
                     {company.name}
@@ -243,38 +243,38 @@ export default function NewEmployeePage() {
 
           {companies.length === 0 || agencies.length === 0 ? (
             <a href="/settings" className="text-sm underline">
-              Ajouter des societes ou agences dans Parametrage
+              Ajouter des sociétés ou agences dans Paramétrage
             </a>
           ) : null}
 
           <input
             className="w-full border rounded-xl p-3"
-            placeholder="Telephone agence"
+            placeholder="Téléphone agence"
             value={form.phoneAgency}
             onChange={(e) => setForm({ ...form, phoneAgency: e.target.value })}
           />
           {selectedAgency?.phone ? (
             <p className="text-sm text-slate-500">
-              Telephone repris depuis l&apos;agence : {selectedAgency.phone}
+              Téléphone repris depuis l&apos;agence : {selectedAgency.phone}
             </p>
           ) : null}
 
           <div className="grid gap-4 md:grid-cols-3">
             <input
               className="w-full border rounded-xl p-3"
-              placeholder="Type intervention autorisee"
+              placeholder="Type intervention autorisée"
               value={form.interventionType}
               onChange={(e) => setForm({ ...form, interventionType: e.target.value })}
             />
             <input
               className="w-full border rounded-xl p-3"
-              placeholder="Vehicule / plaque"
+              placeholder="Véhicule / plaque"
               value={form.vehiclePlate}
               onChange={(e) => setForm({ ...form, vehiclePlate: e.target.value })}
             />
             <input
               className="w-full border rounded-xl p-3"
-              placeholder="Client ou site autorise"
+              placeholder="Client ou site autorisé"
               value={form.authorizedSite}
               onChange={(e) => setForm({ ...form, authorizedSite: e.target.value })}
             />

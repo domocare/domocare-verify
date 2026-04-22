@@ -20,8 +20,8 @@ function getStateMeta(state: VerifyState) {
   if (state === "valid") {
     return {
       label: "Habilitation valide",
-      title: "Intervention autorisee",
-      message: "Ce collaborateur est autorise a intervenir selon les informations affichees.",
+      title: "Intervention autorisée",
+      message: "Ce collaborateur est autorisé à intervenir selon les informations affichées.",
       tone: "border-emerald-200 bg-emerald-50 text-emerald-800",
       pill: "bg-emerald-600 text-white",
       marker: "bg-emerald-500",
@@ -30,12 +30,12 @@ function getStateMeta(state: VerifyState) {
 
   if (state === "expired" || state === "unavailable") {
     return {
-      label: state === "expired" ? "Habilitation expiree" : "Verification indisponible",
-      title: state === "expired" ? "Intervention a verifier" : "Service momentanement indisponible",
+      label: state === "expired" ? "Habilitation expirée" : "Vérification indisponible",
+      title: state === "expired" ? "Intervention à vérifier" : "Service momentanément indisponible",
       message:
         state === "expired"
-          ? "La validite de cette habilitation est depassee. Contactez l'agence avant toute intervention."
-          : "Le service de verification ne peut pas confirmer l'habilitation pour le moment.",
+          ? "La validité de cette habilitation est dépassée. Contactez l'agence avant toute intervention."
+          : "Le service de vérification ne peut pas confirmer l'habilitation pour le moment.",
       tone: "border-amber-200 bg-amber-50 text-amber-800",
       pill: "bg-amber-500 text-white",
       marker: "bg-amber-500",
@@ -44,10 +44,10 @@ function getStateMeta(state: VerifyState) {
 
   return {
     label: state === "suspended" ? "Habilitation suspendue" : "QR code non reconnu",
-    title: state === "suspended" ? "Intervention non autorisee" : "Verification refusee",
+    title: state === "suspended" ? "Intervention non autorisée" : "Vérification refusée",
     message:
       state === "suspended"
-        ? "Cette habilitation a ete suspendue. Ne laissez pas l'intervention demarrer."
+        ? "Cette habilitation a été suspendue. Ne laissez pas l'intervention démarrer."
         : "Ce QR code est absent du referentiel Domocare Verify.",
     tone: "border-red-200 bg-red-50 text-red-800",
     pill: "bg-red-600 text-white",
@@ -87,7 +87,7 @@ function VerifyCard({
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
               Domocare Verify
             </p>
-            <p className="mt-1 text-sm text-slate-600">Controle QR securise</p>
+            <p className="mt-1 text-sm text-slate-600">Contrôle QR sécurisé</p>
           </div>
         </header>
 
@@ -171,7 +171,7 @@ export default async function VerifyPage({
     return (
       <VerifyCard
         state="unavailable"
-        message="Le service de verification est momentanement inaccessible."
+        message="Le service de vérification est momentanément inaccessible."
       />
     );
   }
@@ -270,10 +270,10 @@ function PublicEmployeeSummary({
               {employee.firstName} {employee.lastName}
             </h2>
             <p className="mt-2 text-lg text-slate-600">
-              {employee.jobTitle || "Fonction non renseignee"}
+              {employee.jobTitle || "Fonction non renseignée"}
             </p>
             <p className="mt-1 text-sm font-medium text-slate-500">
-              {employee.company || "Societe non renseignee"} - {employee.agency || "Agence non renseignee"}
+              {employee.company || "Société non renseignée"} - {employee.agency || "Agence non renseignée"}
             </p>
           </div>
         </div>
@@ -281,8 +281,8 @@ function PublicEmployeeSummary({
         <div className="mt-6 grid gap-3 sm:grid-cols-2">
           <PublicInfo label="Validite" value={validUntil ? `Jusqu'au ${formatDate(validUntil)}` : "-"} />
           <PublicInfo label="Type d'intervention" value={employee.interventionType} />
-          <PublicInfo label="Vehicule" value={employee.vehiclePlate} />
-          <PublicInfo label="Site ou client autorise" value={employee.authorizedSite} />
+          <PublicInfo label="Véhicule" value={employee.vehiclePlate} />
+          <PublicInfo label="Site ou client autorisé" value={employee.authorizedSite} />
           <PublicInfo label="Contact agence" value={employee.phoneAgency} />
         </div>
 
@@ -306,8 +306,8 @@ function PublicEmployeeSummary({
 
       <div className="border-t bg-slate-50 p-4 text-sm leading-6 text-slate-600">
         {state === "valid"
-          ? "Si la photo, le vehicule ou le motif d'intervention ne correspondent pas, signalez l'anomalie avant de laisser intervenir."
-          : "Par securite, contactez l'agence ou signalez l'anomalie avant toute intervention."}
+          ? "Si la photo, le véhicule ou le motif d'intervention ne correspondent pas, signalez l'anomalie avant de laisser intervenir."
+          : "Par sécurité, contactez l'agence ou signalez l'anomalie avant toute intervention."}
       </div>
     </div>
   );

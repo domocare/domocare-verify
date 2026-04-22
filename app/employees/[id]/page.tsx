@@ -47,7 +47,7 @@ function formatInputDate(date?: Date | null) {
 }
 
 function getStatusLabel(status?: string | null) {
-  if (status === "active") return "Autorise";
+  if (status === "active") return "Autorisé";
   if (status === "expired") return "Expire";
   if (status === "revoked" || status === "suspended") return "Suspendu";
   return "Inconnu";
@@ -91,10 +91,10 @@ export default async function EmployeeDetailPage({ params, searchParams }: Props
     return (
       <BackofficeShell
         title="Fiche collaborateur"
-        subtitle="Les informations ne peuvent pas etre chargees pour le moment."
+        subtitle="Les informations ne peuvent pas être chargées pour le moment."
         actions={
           <Link href="/employees" className="rounded-lg border bg-white px-4 py-2 text-sm font-medium">
-            Retour a la liste
+            Retour à la liste
           </Link>
         }
       >
@@ -122,11 +122,11 @@ export default async function EmployeeDetailPage({ params, searchParams }: Props
   return (
     <BackofficeShell
       title={`${employee.firstName} ${employee.lastName}`}
-      subtitle="Fiche collaborateur, statut d'autorisation et QR code de verification."
+      subtitle="Fiche collaborateur, statut d'autorisation et QR code de vérification."
       actions={
         <>
           <Link href="/employees" className="rounded-lg border bg-white px-4 py-2 text-sm font-medium">
-            Retour a la liste
+            Retour à la liste
           </Link>
           {isEditing ? (
             <Link href={`/employees/${employee.id}`} className="rounded-lg border bg-white px-4 py-2 text-sm font-medium">
@@ -164,27 +164,27 @@ export default async function EmployeeDetailPage({ params, searchParams }: Props
               </div>
 
               <div className="grid gap-4 pt-5 md:grid-cols-2">
-                <EditField label="Prenom" name="firstName" defaultValue={employee.firstName} required />
+                <EditField label="Prénom" name="firstName" defaultValue={employee.firstName} required />
                 <EditField label="Nom" name="lastName" defaultValue={employee.lastName} required />
                 <EditField label="Fonction" name="jobTitle" defaultValue={employee.jobTitle} />
                 <EditSelect
-                  label="Societe"
+                  label="Société"
                   name="company"
                   defaultValue={employee.company}
                   items={companies}
-                  emptyLabel="Choisir une societe"
+                  emptyLabel="Choisir une société"
                 />
                 <EditSelect
                   label="Agence"
                   name="agency"
                   defaultValue={employee.agency}
                   items={filteredAgencies}
-                  emptyLabel={employee.company ? "Choisir une agence" : "Choisir une societe d'abord"}
+                  emptyLabel={employee.company ? "Choisir une agence" : "Choisir une société d'abord"}
                 />
-                <EditField label="Telephone agence" name="phoneAgency" defaultValue={employee.phoneAgency} />
+                <EditField label="Téléphone agence" name="phoneAgency" defaultValue={employee.phoneAgency} />
                 <EditField label="Type intervention" name="interventionType" defaultValue={employee.interventionType} />
-                <EditField label="Vehicule / plaque" name="vehiclePlate" defaultValue={employee.vehiclePlate} />
-                <EditField label="Client ou site autorise" name="authorizedSite" defaultValue={employee.authorizedSite} />
+                <EditField label="Véhicule / plaque" name="vehiclePlate" defaultValue={employee.vehiclePlate} />
+                <EditField label="Client ou site autorisé" name="authorizedSite" defaultValue={employee.authorizedSite} />
                 <EditField label="Photo URL ou base64" name="photoUrl" defaultValue={employee.photoUrl} />
 
                 <div className="space-y-2">
@@ -260,7 +260,7 @@ export default async function EmployeeDetailPage({ params, searchParams }: Props
                 <h2 className="mt-1 text-2xl font-semibold">
                   {employee.firstName} {employee.lastName}
                 </h2>
-                <p className="mt-2 text-slate-600">{employee.jobTitle || "Fonction non renseignee"}</p>
+                <p className="mt-2 text-slate-600">{employee.jobTitle || "Fonction non renseignée"}</p>
               </div>
             </div>
 
@@ -272,12 +272,12 @@ export default async function EmployeeDetailPage({ params, searchParams }: Props
           </div>
 
           <div className="grid gap-4 pt-5 md:grid-cols-2">
-            <InfoItem label="Societe" value={employee.company} />
+            <InfoItem label="Société" value={employee.company} />
             <InfoItem label="Agence" value={employee.agency} />
-            <InfoItem label="Telephone agence" value={employee.phoneAgency} />
+            <InfoItem label="Téléphone agence" value={employee.phoneAgency} />
             <InfoItem label="Type intervention" value={employee.interventionType} />
-            <InfoItem label="Vehicule / plaque" value={employee.vehiclePlate} />
-            <InfoItem label="Client ou site autorise" value={employee.authorizedSite} />
+            <InfoItem label="Véhicule / plaque" value={employee.vehiclePlate} />
+            <InfoItem label="Client ou site autorisé" value={employee.authorizedSite} />
             <InfoItem label="Etat collaborateur" value={employee.isActive ? "Actif" : "Inactif"} />
             <InfoItem label="Autorisation depuis" value={formatDate(employee.authorization?.validFrom)} />
             <InfoItem label="Valide jusqu'au" value={formatDate(employee.authorization?.validUntil)} />
@@ -320,7 +320,7 @@ export default async function EmployeeDetailPage({ params, searchParams }: Props
                   type="submit"
                   className="rounded-lg border bg-white px-4 py-2 text-sm font-semibold text-slate-800"
                 >
-                  Regenerer QR
+                  Régénérer QR
                 </button>
               </form>
             </div>

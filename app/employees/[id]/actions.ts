@@ -87,7 +87,7 @@ export async function updateEmployee(employeeId: string, formData: FormData) {
     });
 
     if (selectedAgency?.company && selectedAgency.company.name !== company) {
-      throw new Error("L'agence selectionnee n'est pas rattachee a cette societe.");
+      throw new Error("L'agence sélectionnée n'est pas rattachée à cette société.");
     }
   }
 

@@ -78,8 +78,8 @@ export default function LoginForm() {
       const data = (await res.json().catch(() => null)) as { reason?: string } | null;
       setMessage(
         data?.reason === "invalid_captcha"
-          ? "Captcha incorrect ou expire. Reessayez avec le nouveau calcul."
-          : "Connexion impossible. Verifie les identifiants et le captcha."
+          ? "Captcha incorrect ou expiré. Réessayez avec le nouveau calcul."
+          : "Connexion impossible. Vérifiez les identifiants et le captcha."
       );
       void loadCaptcha();
       return;
@@ -127,14 +127,14 @@ export default function LoginForm() {
           <div>
             <div className="mb-5 inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/10 px-4 py-3 text-sm font-bold text-emerald-50">
               <Leaf className="h-4 w-4 text-emerald-300" />
-              Acces securise au back-office
+              Accès sécurisé au back-office
             </div>
             <h1 className="max-w-3xl text-5xl font-black leading-[1.04] tracking-tight md:text-6xl">
               Pilotez les habilitations terrain du Groupe Lantana.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-100">
-              Connectez-vous pour creer les collaborateurs, generer les QR codes,
-              verifier les autorisations et suivre les controles realises sur chantier.
+              Connectez-vous pour créer les collaborateurs, générer les QR codes,
+              vérifier les autorisations et suivre les contrôles réalisés sur chantier.
             </p>
           </div>
 
@@ -150,14 +150,14 @@ export default function LoginForm() {
               <QrCode className="h-6 w-6 text-emerald-300" />
               <p className="mt-3 text-2xl font-black text-emerald-100">QR code</p>
               <p className="mt-1 text-sm font-semibold text-slate-200">
-                Verification terrain rapide.
+                Vérification terrain rapide.
               </p>
             </div>
             <div className="rounded-lg border border-white/15 bg-white/10 p-4 backdrop-blur">
               <LockKeyhole className="h-6 w-6 text-emerald-300" />
-              <p className="mt-3 text-2xl font-black text-emerald-100">Securise</p>
+              <p className="mt-3 text-2xl font-black text-emerald-100">Sécurisé</p>
               <p className="mt-1 text-sm font-semibold text-slate-200">
-                Acces reserve aux responsables.
+                Accès réservé aux responsables.
               </p>
             </div>
           </div>
@@ -174,7 +174,7 @@ export default function LoginForm() {
             </div>
             <h2 className="text-3xl font-black tracking-tight">Connexion</h2>
             <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">
-              Acces responsable agence et administrateur groupe.
+              Accès responsable agence et administrateur groupe.
             </p>
           </div>
 
@@ -207,7 +207,7 @@ export default function LoginForm() {
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="text-xs font-black uppercase tracking-[0.16em] text-emerald-700">
-                      Verification humaine
+                      Vérification humaine
                     </p>
                     <p className="mt-1 text-lg font-black text-slate-950">
                       {captchaLoading ? "Chargement..." : `${captchaQuestion} = ?`}
@@ -227,7 +227,7 @@ export default function LoginForm() {
                   value={form.captchaAnswer}
                   onChange={(e) => setForm({ ...form, captchaAnswer: e.target.value })}
                   className="rounded-lg border border-slate-200 bg-white px-4 py-3 font-normal outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
-                  placeholder="Resultat du calcul"
+                  placeholder="Résultat du calcul"
                   required
                 />
               </div>

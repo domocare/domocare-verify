@@ -26,7 +26,7 @@ export default async function ScansPage() {
   return (
     <BackofficeShell
       title="Historique des scans"
-      subtitle="Journal des verifications effectuees"
+      subtitle="Journal des vérifications effectuées"
     >
       {scans ? (
         <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
@@ -36,8 +36,8 @@ export default async function ScansPage() {
             <div className="overflow-hidden">
               <div className="hidden grid-cols-[1.1fr_160px_180px_160px] gap-4 border-b bg-slate-50 px-5 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500 lg:grid">
                 <span>Token</span>
-                <span>Resultat</span>
-                <span>Societe</span>
+                <span>Résultat</span>
+                <span>Société</span>
                 <span>Date</span>
               </div>
               {scans.map((scan) => (

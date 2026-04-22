@@ -21,20 +21,20 @@ export type EmployeeExcelRow = {
 
 export const employeeExcelColumns = [
   { header: "ID", key: "id", width: 28 },
-  { header: "Prenom", key: "firstName", width: 18 },
+  { header: "Prénom", key: "firstName", width: 18 },
   { header: "Nom", key: "lastName", width: 18 },
   { header: "Fonction", key: "jobTitle", width: 26 },
-  { header: "Societe", key: "company", width: 24 },
+  { header: "Société", key: "company", width: 24 },
   { header: "Agence", key: "agency", width: 20 },
-  { header: "Telephone agence", key: "phoneAgency", width: 20 },
+  { header: "Téléphone agence", key: "phoneAgency", width: 20 },
   { header: "Type intervention", key: "interventionType", width: 28 },
-  { header: "Vehicule plaque", key: "vehiclePlate", width: 18 },
-  { header: "Site client autorise", key: "authorizedSite", width: 28 },
+  { header: "Véhicule plaque", key: "vehiclePlate", width: 18 },
+  { header: "Site client autorisé", key: "authorizedSite", width: 28 },
   { header: "Statut", key: "status", width: 16 },
   { header: "Expiration QR", key: "expiresAt", width: 18 },
   { header: "Photo URL ou base64", key: "photoUrl", width: 32 },
   { header: "Token QR", key: "token", width: 34 },
-  { header: "Lien verification", key: "verifyUrl", width: 54 },
+  { header: "Lien vérification", key: "verifyUrl", width: 54 },
 ];
 
 const headerAliases: Record<string, keyof EmployeeExcelRow> = {
@@ -174,12 +174,12 @@ export function createEmployeeWorkbook(rows: EmployeeExcelRow[], title = "Collab
   ];
   instructions.getRow(1).font = { bold: true };
   instructions.addRows([
-    { field: "Prenom / Nom", help: "Obligatoires pour creer un collaborateur." },
-    { field: "ID", help: "Laisser vide pour une creation. Renseigner un ID existant pour mettre a jour une fiche." },
+    { field: "Prénom / Nom", help: "Obligatoires pour créer un collaborateur." },
+    { field: "ID", help: "Laisser vide pour une création. Renseigner un ID existant pour mettre à jour une fiche." },
     { field: "Statut", help: "Valeurs acceptees : active, expired, revoked. Par defaut : active." },
     { field: "Expiration QR", help: "Format recommande : AAAA-MM-JJ, exemple 2026-12-31." },
     { field: "Photo URL ou base64", help: "Optionnel. Utiliser une URL https ou une image base64 data:image/..." },
-    { field: "Token QR / Lien verification", help: "Colonnes informatives a l'export. Elles sont ignorees a l'import." },
+    { field: "Token QR / Lien vérification", help: "Colonnes informatives à l'export. Elles sont ignorées à l'import." },
   ]);
 
   return workbook;

@@ -24,7 +24,7 @@ export default function ReportForm({ token }: { token: string }) {
     });
 
     if (!res.ok) {
-      setMessage("Le signalement n'a pas pu etre envoye.");
+      setMessage("Le signalement n'a pas pu être envoyé.");
       return;
     }
 
@@ -35,7 +35,7 @@ export default function ReportForm({ token }: { token: string }) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-slate-100 p-6 text-slate-900">
         <div className="w-full max-w-md rounded-2xl border bg-white p-6 text-center shadow-sm">
-          <h1 className="text-2xl font-semibold">Signalement envoye</h1>
+          <h1 className="text-2xl font-semibold">Signalement envoyé</h1>
           <p className="mt-3 text-slate-600">Merci. Le back-office peut maintenant traiter cette anomalie.</p>
         </div>
       </main>
@@ -56,9 +56,9 @@ export default function ReportForm({ token }: { token: string }) {
           >
             <option value="person_not_recognized">Personne non reconnue</option>
             <option value="photo_mismatch">Photo non conforme</option>
-            <option value="wrong_vehicle">Mauvais vehicule</option>
+            <option value="wrong_vehicle">Mauvais véhicule</option>
             <option value="unexpected_visit">Intervention non prevue</option>
-            <option value="validity_doubt">Doute sur la validite</option>
+            <option value="validity_doubt">Doute sur la validité</option>
             <option value="other">Autre</option>
           </select>
 
@@ -81,7 +81,7 @@ export default function ReportForm({ token }: { token: string }) {
               value={form.phone}
               onChange={(e) => setForm({ ...form, phone: e.target.value })}
               className="rounded-lg border px-4 py-3"
-              placeholder="Telephone"
+              placeholder="Téléphone"
             />
             <input
               type="email"

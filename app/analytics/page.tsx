@@ -71,8 +71,8 @@ async function getAnalyticsData() {
   const total = emptyStats("Total");
 
   employees.forEach((employee) => {
-    const companyName = employee.company || "Societe non renseignee";
-    const agencyName = employee.agency || "Agence non renseignee";
+    const companyName = employee.company || "Société non renseignée";
+    const agencyName = employee.agency || "Agence non renseignée";
 
     const company = companies.get(companyName) || emptyStats(companyName);
     const agency = agencies.get(agencyName) || emptyStats(agencyName);
@@ -109,7 +109,7 @@ export default async function AnalyticsPage() {
   return (
     <BackofficeShell
       title="Pilotage effectifs"
-      subtitle="Vue dynamique du nombre de collaborateurs par societe et par agence."
+      subtitle="Vue dynamique du nombre de collaborateurs par société et par agence."
     >
       {data ? (
         <div className="space-y-6">
@@ -123,9 +123,9 @@ export default async function AnalyticsPage() {
           <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
             <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
               <div className="border-b border-slate-100 p-5">
-                <h2 className="text-xl font-semibold">Collaborateurs par societe</h2>
+                <h2 className="text-xl font-semibold">Collaborateurs par société</h2>
                 <p className="mt-1 text-sm text-slate-500">
-                  Repartition globale avec detail des agences rattachees.
+                  Répartition globale avec détail des agences rattachées.
                 </p>
               </div>
               <div className="divide-y divide-slate-100">
@@ -148,7 +148,7 @@ export default async function AnalyticsPage() {
               </div>
               <div className="divide-y divide-slate-100">
                 {data.agencies.length === 0 ? (
-                  <p className="p-5 text-sm text-slate-500">Aucune agence rattachee.</p>
+                  <p className="p-5 text-sm text-slate-500">Aucune agence rattachée.</p>
                 ) : (
                   data.agencies.map((agency) => (
                     <SimpleGroupRow key={agency.name} group={agency} total={data.total.total} />
