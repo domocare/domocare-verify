@@ -14,8 +14,6 @@ import {
   UserRound,
   Users,
 } from "lucide-react";
-import CompanyLogo from "@/components/company-logo";
-import { companyBrands } from "@/lib/company-branding";
 
 type Props = {
   title: string;
@@ -132,15 +130,6 @@ export default function BackofficeShell({
               </div>
 
               <div className="flex items-center justify-between gap-3 md:justify-end">
-                <div className="hidden flex-wrap gap-2 xl:flex">
-                  {companyBrands.map((brand) => (
-                    <CompanyLogo
-                      key={brand.name}
-                      brand={brand}
-                      className="h-11 w-28 p-2 shadow-none"
-                    />
-                  ))}
-                </div>
                 <button
                   type="button"
                   className="flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600"
