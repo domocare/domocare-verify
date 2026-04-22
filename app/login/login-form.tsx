@@ -12,8 +12,6 @@ import {
   RefreshCw,
   ShieldCheck,
 } from "lucide-react";
-import CompanyLogo from "@/components/company-logo";
-import { companyBrands } from "@/lib/company-branding";
 
 export default function LoginForm() {
   const [form, setForm] = useState({
@@ -164,21 +162,6 @@ export default function LoginForm() {
             </div>
           </div>
 
-          <div>
-            <p className="mb-3 text-sm font-bold uppercase tracking-[0.18em] text-emerald-100">
-              Entites connectees
-            </p>
-            <div className="flex flex-wrap gap-3">
-              {companyBrands.map((brand, index) => (
-                <CompanyLogo
-                  key={brand.name}
-                  brand={brand}
-                  preload={index === 0}
-                  className="h-14 w-36 border-white/20 bg-white p-3 shadow-xl"
-                />
-              ))}
-            </div>
-          </div>
         </section>
 
         <form
