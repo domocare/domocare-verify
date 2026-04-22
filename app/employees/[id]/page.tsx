@@ -46,6 +46,13 @@ function formatInputDate(date?: Date | null) {
   return date.toISOString().slice(0, 10);
 }
 
+function splitAgencyNames(value?: string | null) {
+  return String(value || "")
+    .split(",")
+    .map((agency) => agency.trim())
+    .filter(Boolean);
+}
+
 function getStatusLabel(status?: string | null) {
   if (status === "active") return "Autorisé";
   if (status === "expired") return "Expire";
@@ -118,6 +125,7 @@ export default async function EmployeeDetailPage({ params, searchParams }: Props
   const filteredAgencies = selectedCompany
     ? agencies.filter((agency) => agency.companyId === selectedCompany.id)
     : agencies;
+  const selectedAgencyNames = splitAgencyNames(employee.agency);
 
   return (
     <BackofficeShell
@@ -174,12 +182,11 @@ export default async function EmployeeDetailPage({ params, searchParams }: Props
                   items={companies}
                   emptyLabel="Choisir une société"
                 />
-                <EditSelect
-                  label="Agence"
+                <EditMultiSelect
+                  label="Agences"
                   name="agency"
-                  defaultValue={employee.agency}
+                  defaultValues={selectedAgencyNames}
                   items={filteredAgencies}
-                  emptyLabel={employee.company ? "Choisir une agence" : "Choisir une société d'abord"}
                 />
                 <EditField label="Téléphone agence" name="phoneAgency" defaultValue={employee.phoneAgency} />
                 <EditField label="Type intervention" name="interventionType" defaultValue={employee.interventionType} />
@@ -445,6 +452,51 @@ function EditSelect({
           </option>
         ))}
       </select>
+    </div>
+  );
+}
+
+function EditMultiSelect({
+  label,
+  name,
+  defaultValues,
+  items,
+}: {
+  label: string;
+  name: string;
+  defaultValues: string[];
+  items: { id: string; name: string }[];
+}) {
+  const missingValues = defaultValues.filter(
+    (value) => !items.some((item) => item.name === value),
+  );
+
+  return (
+    <div className="space-y-2">
+      <label className="text-sm font-medium text-slate-600" htmlFor={name}>
+        {label}
+      </label>
+      <select
+        id={name}
+        name={name}
+        defaultValue={defaultValues}
+        multiple
+        className="min-h-32 w-full rounded-lg border bg-white px-4 py-3"
+      >
+        {missingValues.map((value) => (
+          <option key={value} value={value}>
+            {value}
+          </option>
+        ))}
+        {items.map((item) => (
+          <option key={item.id} value={item.name}>
+            {item.name}
+          </option>
+        ))}
+      </select>
+      <p className="text-xs text-slate-500">
+        Maintenez Ctrl pour sélectionner plusieurs agences.
+      </p>
     </div>
   );
 }

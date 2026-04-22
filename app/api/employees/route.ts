@@ -1,11 +1,30 @@
 import { prisma } from "@/lib/prisma";
+import { requireRole } from "@/lib/auth-middleware";
 import crypto from "crypto";
 
 function generateToken() {
   return crypto.randomBytes(16).toString("hex");
 }
 
+function splitAgencyNames(value: unknown) {
+  return typeof value === "string"
+    ? value
+        .split(",")
+        .map((agency) => agency.trim())
+        .filter(Boolean)
+    : [];
+}
+
 export async function POST(req: Request) {
+  const authError = await requireRole(req, [
+    "SUPER_ADMIN_GROUP",
+    "SECURITY_ADMIN",
+    "AGENCY_ADMIN",
+    "ADMIN_ASSISTANT",
+    "HR_OPERATIONS",
+  ]);
+  if (authError) return authError;
+
   try {
     const body = await req.json();
     const photoUrl = typeof body.photoUrl === "string" ? body.photoUrl : "";
@@ -18,15 +37,21 @@ export async function POST(req: Request) {
       return Response.json({ ok: false }, { status: 413 });
     }
 
-    if (body.company && body.agency) {
-      const agency = await prisma.agency.findUnique({
-        where: { name: body.agency },
+    const agencyNames = splitAgencyNames(body.agency);
+
+    if (body.company && agencyNames.length > 0) {
+      const selectedAgencies = await prisma.agency.findMany({
+        where: { name: { in: agencyNames } },
         include: { company: true },
       });
 
-      if (agency?.company && agency.company.name !== body.company) {
+      const hasInvalidAgency =
+        selectedAgencies.length !== agencyNames.length ||
+        selectedAgencies.some((agency) => agency.company && agency.company.name !== body.company);
+
+      if (hasInvalidAgency) {
         return Response.json(
-          { ok: false, message: "Agence non rattachee a la societe selectionnee." },
+          { ok: false, message: "Agence non rattachée à la société sélectionnée." },
           { status: 400 },
         );
       }

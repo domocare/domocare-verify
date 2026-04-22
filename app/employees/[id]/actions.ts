@@ -20,6 +20,14 @@ function readText(formData: FormData, key: string) {
   return typeof value === "string" && value.trim() ? value.trim() : null;
 }
 
+function readTextList(formData: FormData, key: string) {
+  return formData
+    .getAll(key)
+    .filter((value): value is string => typeof value === "string")
+    .map((value) => value.trim())
+    .filter(Boolean);
+}
+
 function readStatus(formData: FormData) {
   const status = readText(formData, "status") || "active";
 
@@ -38,7 +46,7 @@ function readDate(formData: FormData, key: string) {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-async function ensureSettings(company: string | null, agency: string | null) {
+async function ensureSettings(company: string | null, agencies: string[]) {
   const companyRecord = company
     ? await prisma.company.upsert({
         where: { name: company },
@@ -47,7 +55,7 @@ async function ensureSettings(company: string | null, agency: string | null) {
       })
     : null;
 
-  if (agency) {
+  for (const agency of agencies) {
     await prisma.agency.upsert({
       where: { name: agency },
       update: {
@@ -66,11 +74,12 @@ export async function updateEmployee(employeeId: string, formData: FormData) {
   const lastName = readText(formData, "lastName");
 
   if (!firstName || !lastName) {
-    throw new Error("Le prenom et le nom sont obligatoires.");
+    throw new Error("Le prénom et le nom sont obligatoires.");
   }
 
   const company = readText(formData, "company");
-  const agency = readText(formData, "agency");
+  const agencyNames = readTextList(formData, "agency");
+  const agency = agencyNames.join(", ") || null;
   const status = readStatus(formData);
   const validFrom = readDate(formData, "validFrom");
   const validUntil = readDate(formData, "validUntil");
@@ -78,15 +87,19 @@ export async function updateEmployee(employeeId: string, formData: FormData) {
   const isSuspended = status === "revoked" || status === "suspended";
   const now = new Date();
 
-  await ensureSettings(company, agency);
+  await ensureSettings(company, agencyNames);
 
-  if (company && agency) {
-    const selectedAgency = await prisma.agency.findUnique({
-      where: { name: agency },
+  if (company && agencyNames.length > 0) {
+    const selectedAgencies = await prisma.agency.findMany({
+      where: { name: { in: agencyNames } },
       include: { company: true },
     });
 
-    if (selectedAgency?.company && selectedAgency.company.name !== company) {
+    const hasInvalidAgency =
+      selectedAgencies.length !== agencyNames.length ||
+      selectedAgencies.some((selectedAgency) => selectedAgency.company?.name !== company);
+
+    if (hasInvalidAgency) {
       throw new Error("L'agence sélectionnée n'est pas rattachée à cette société.");
     }
   }

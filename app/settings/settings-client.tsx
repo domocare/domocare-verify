@@ -19,6 +19,7 @@ type AgencyItem = {
   name: string;
   companyId: string | null;
   company?: CompanyItem | null;
+  siret: string | null;
   address: string | null;
   phone: string | null;
   email: string | null;
@@ -37,6 +38,7 @@ type CompanyForm = {
 type AgencyForm = {
   name: string;
   companyId: string;
+  siret: string;
   address: string;
   phone: string;
   email: string;
@@ -60,6 +62,7 @@ const emptyCompanyForm: CompanyForm = {
 const emptyAgencyForm: AgencyForm = {
   name: "",
   companyId: "",
+  siret: "",
   address: "",
   phone: "",
   email: "",
@@ -244,6 +247,7 @@ export default function SettingsClient() {
     setAgencyForm({
       name: agency.name,
       companyId: agency.companyId || "",
+      siret: agency.siret || "",
       address: agency.address || "",
       phone: agency.phone || "",
       email: agency.email || "",
@@ -388,6 +392,13 @@ export default function SettingsClient() {
                 </option>
               ))}
             </select>
+            <input
+              value={agencyForm.siret}
+              onChange={(e) => setAgencyForm({ ...agencyForm, siret: e.target.value })}
+              className="rounded-lg border px-4 py-3"
+              placeholder="SIRET"
+              inputMode="numeric"
+            />
             <textarea
               value={agencyForm.address}
               onChange={(e) => setAgencyForm({ ...agencyForm, address: e.target.value })}
@@ -440,6 +451,7 @@ export default function SettingsClient() {
           renderMeta={(agency) =>
             [
               agency.company?.name || "Aucune société rattachée",
+              agency.siret ? `SIRET ${agency.siret}` : null,
               agency.director,
               agency.phone,
               agency.email,

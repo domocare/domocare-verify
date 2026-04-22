@@ -45,6 +45,7 @@ model Agency {
   name      String   @unique
   companyId String?
   company   Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  siret     String?
   address   String?
   phone     String?
   email     String?

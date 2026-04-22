@@ -1,10 +1,20 @@
 import { prisma } from "@/lib/prisma";
+import { requireRole } from "@/lib/auth-middleware";
 
 function readText(value: unknown) {
   return typeof value === "string" && value.trim() ? value.trim() : null;
 }
 
-export async function GET() {
+export async function GET(req: Request) {
+  const authError = await requireRole(req, [
+    "SUPER_ADMIN_GROUP",
+    "SECURITY_ADMIN",
+    "AGENCY_ADMIN",
+    "ADMIN_ASSISTANT",
+    "READ_ONLY",
+  ]);
+  if (authError) return authError;
+
   const agencies = await prisma.agency.findMany({
     orderBy: [{ company: { name: "asc" } }, { name: "asc" }],
     include: {
@@ -16,6 +26,13 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  const authError = await requireRole(req, [
+    "SUPER_ADMIN_GROUP",
+    "SECURITY_ADMIN",
+    "AGENCY_ADMIN",
+  ]);
+  if (authError) return authError;
+
   const body = await req.json();
   const name = typeof body.name === "string" ? body.name.trim() : "";
   const companyId = typeof body.companyId === "string" && body.companyId ? body.companyId : null;
@@ -35,6 +52,7 @@ export async function POST(req: Request) {
     create: {
       name,
       companyId,
+      siret: readText(body.siret),
       address: readText(body.address),
       phone: readText(body.phone),
       email: readText(body.email),
@@ -42,6 +60,7 @@ export async function POST(req: Request) {
     },
     update: {
       companyId,
+      siret: readText(body.siret),
       address: readText(body.address),
       phone: readText(body.phone),
       email: readText(body.email),
@@ -53,6 +72,13 @@ export async function POST(req: Request) {
 }
 
 export async function PATCH(req: Request) {
+  const authError = await requireRole(req, [
+    "SUPER_ADMIN_GROUP",
+    "SECURITY_ADMIN",
+    "AGENCY_ADMIN",
+  ]);
+  if (authError) return authError;
+
   const body = await req.json();
   const id = typeof body.id === "string" ? body.id : "";
   const name = typeof body.name === "string" ? body.name.trim() : "";
@@ -86,6 +112,7 @@ export async function PATCH(req: Request) {
       data: {
         name,
         companyId,
+        siret: readText(body.siret),
         address: readText(body.address),
         phone: readText(body.phone),
         email: readText(body.email),
@@ -106,6 +133,12 @@ export async function PATCH(req: Request) {
 }
 
 export async function DELETE(req: Request) {
+  const authError = await requireRole(req, [
+    "SUPER_ADMIN_GROUP",
+    "SECURITY_ADMIN",
+  ]);
+  if (authError) return authError;
+
   const body = await req.json();
   const id = typeof body.id === "string" ? body.id : "";
 

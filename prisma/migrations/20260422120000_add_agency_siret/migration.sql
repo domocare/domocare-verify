@@ -1,0 +1,1 @@
+ALTER TABLE "Agency" ADD COLUMN "siret" TEXT;

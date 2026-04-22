@@ -21,6 +21,7 @@ type CompanyItem = SettingItem & {
 type AgencyItem = SettingItem & {
   companyId: string | null;
   company?: SettingItem | null;
+  siret?: string | null;
   address?: string | null;
   phone?: string | null;
   email?: string | null;
@@ -32,13 +33,20 @@ type OptionsResponse = {
   agencies: AgencyItem[];
 };
 
+function splitAgencyNames(value: string) {
+  return value
+    .split(",")
+    .map((agency) => agency.trim())
+    .filter(Boolean);
+}
+
 export default function NewEmployeePage() {
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
     jobTitle: "",
-    agency: "",
     company: "",
+    agency: "",
     photoUrl: "",
     phoneAgency: "",
     interventionType: "",
@@ -66,7 +74,7 @@ export default function NewEmployeePage() {
       setAgencies(data.agencies);
     }
 
-    loadSettings();
+    void loadSettings();
   }, []);
 
   async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -112,10 +120,10 @@ export default function NewEmployeePage() {
     });
 
     if (res.ok) {
-      alert("Collaborateur cree");
+      alert("Collaborateur créé");
       window.location.href = "/employees";
     } else {
-      alert("Erreur lors de la creation");
+      alert("Erreur lors de la création");
     }
   }
 
@@ -123,18 +131,22 @@ export default function NewEmployeePage() {
   const filteredAgencies = selectedCompany
     ? agencies.filter((agency) => agency.companyId === selectedCompany.id)
     : [];
-  const selectedAgency = agencies.find((agency) => agency.name === form.agency);
+  const selectedAgencyNames = splitAgencyNames(form.agency);
+  const selectedAgencies = agencies.filter((agency) => selectedAgencyNames.includes(agency.name));
+  const selectedAgencyPhones = Array.from(
+    new Set(selectedAgencies.map((agency) => agency.phone).filter(Boolean)),
+  );
 
   return (
     <BackofficeShell
       title="Nouveau collaborateur"
-      subtitle="Creer une nouvelle fiche intervenant"
+      subtitle="Créer une nouvelle fiche intervenant"
     >
-      <div className="bg-white rounded-2xl shadow p-6 max-w-3xl">
+      <div className="max-w-3xl rounded-lg bg-white p-6 shadow">
         <form onSubmit={handleSubmit} className="grid gap-4">
           <div className="grid gap-4 md:grid-cols-2">
             <input
-              className="w-full border rounded-xl p-3"
+              className="w-full rounded-lg border p-3"
               placeholder="Prénom"
               value={form.firstName}
               onChange={(e) => setForm({ ...form, firstName: e.target.value })}
@@ -142,7 +154,7 @@ export default function NewEmployeePage() {
             />
 
             <input
-              className="w-full border rounded-xl p-3"
+              className="w-full rounded-lg border p-3"
               placeholder="Nom"
               value={form.lastName}
               onChange={(e) => setForm({ ...form, lastName: e.target.value })}
@@ -151,15 +163,15 @@ export default function NewEmployeePage() {
           </div>
 
           <div className="grid gap-4 md:grid-cols-[180px_1fr]">
-            <div className="flex items-center justify-center rounded-xl border bg-slate-50 p-3">
+            <div className="flex items-center justify-center rounded-lg border bg-slate-50 p-3">
               {form.photoUrl ? (
                 <img
                   src={form.photoUrl}
-                  alt="Apercu photo"
-                  className="h-36 w-36 rounded-xl object-cover"
+                  alt="Aperçu photo"
+                  className="h-36 w-36 rounded-lg object-cover"
                 />
               ) : (
-                <div className="flex h-36 w-36 items-center justify-center rounded-xl bg-white text-center text-sm text-slate-400">
+                <div className="flex h-36 w-36 items-center justify-center rounded-lg bg-white text-center text-sm text-slate-400">
                   Photo
                 </div>
               )}
@@ -171,7 +183,7 @@ export default function NewEmployeePage() {
                 type="file"
                 accept="image/*"
                 onChange={handlePhotoChange}
-                className="w-full rounded-xl border px-4 py-3"
+                className="w-full rounded-lg border px-4 py-3"
               />
               {photoError ? <p className="text-sm text-red-600">{photoError}</p> : null}
               {form.photoUrl ? (
@@ -187,7 +199,7 @@ export default function NewEmployeePage() {
           </div>
 
           <input
-            className="w-full border rounded-xl p-3"
+            className="w-full rounded-lg border p-3"
             placeholder="Fonction"
             value={form.jobTitle}
             onChange={(e) => setForm({ ...form, jobTitle: e.target.value })}
@@ -195,37 +207,13 @@ export default function NewEmployeePage() {
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Agence</label>
-              <select
-                className="w-full border rounded-xl p-3"
-                value={form.agency}
-                onChange={(e) => {
-                  const agency = agencies.find((item) => item.name === e.target.value);
-                  setForm({
-                    ...form,
-                    agency: e.target.value,
-                    phoneAgency: agency?.phone || form.phoneAgency,
-                  });
-                }}
-                disabled={!form.company}
-              >
-                <option value="">
-                  {form.company ? "Choisir une agence" : "Choisir d'abord une société"}
-                </option>
-                {filteredAgencies.map((agency) => (
-                  <option key={agency.id} value={agency.name}>
-                    {agency.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-2">
               <label className="text-sm font-medium">Société</label>
               <select
-                className="w-full border rounded-xl p-3"
+                className="w-full rounded-lg border p-3"
                 value={form.company}
-                onChange={(e) => setForm({ ...form, company: e.target.value, agency: "" })}
+                onChange={(e) =>
+                  setForm({ ...form, company: e.target.value, agency: "", phoneAgency: "" })
+                }
               >
                 <option value="">Choisir une société</option>
                 {companies.map((company) => (
@@ -235,11 +223,45 @@ export default function NewEmployeePage() {
                 ))}
               </select>
             </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Agences</label>
+              <select
+                className="min-h-32 w-full rounded-lg border p-3"
+                value={selectedAgencyNames}
+                multiple
+                onChange={(e) => {
+                  const values = Array.from(e.target.selectedOptions).map((option) => option.value);
+                  const phones = Array.from(
+                    new Set(
+                      agencies
+                        .filter((agency) => values.includes(agency.name))
+                        .map((agency) => agency.phone)
+                        .filter(Boolean),
+                    ),
+                  );
+
+                  setForm({
+                    ...form,
+                    agency: values.join(", "),
+                    phoneAgency: phones.join(" / ") || form.phoneAgency,
+                  });
+                }}
+                disabled={!form.company}
+              >
+                {filteredAgencies.map((agency) => (
+                  <option key={agency.id} value={agency.name}>
+                    {agency.name}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-slate-500">
+                Maintenez Ctrl pour sélectionner plusieurs agences.
+              </p>
+            </div>
           </div>
 
-          {settingsError ? (
-            <p className="text-sm text-red-600">{settingsError}</p>
-          ) : null}
+          {settingsError ? <p className="text-sm text-red-600">{settingsError}</p> : null}
 
           {companies.length === 0 || agencies.length === 0 ? (
             <a href="/settings" className="text-sm underline">
@@ -248,32 +270,32 @@ export default function NewEmployeePage() {
           ) : null}
 
           <input
-            className="w-full border rounded-xl p-3"
+            className="w-full rounded-lg border p-3"
             placeholder="Téléphone agence"
             value={form.phoneAgency}
             onChange={(e) => setForm({ ...form, phoneAgency: e.target.value })}
           />
-          {selectedAgency?.phone ? (
+          {selectedAgencyPhones.length > 0 ? (
             <p className="text-sm text-slate-500">
-              Téléphone repris depuis l&apos;agence : {selectedAgency.phone}
+              Téléphone repris depuis l&apos;agence : {selectedAgencyPhones.join(" / ")}
             </p>
           ) : null}
 
           <div className="grid gap-4 md:grid-cols-3">
             <input
-              className="w-full border rounded-xl p-3"
+              className="w-full rounded-lg border p-3"
               placeholder="Type intervention autorisée"
               value={form.interventionType}
               onChange={(e) => setForm({ ...form, interventionType: e.target.value })}
             />
             <input
-              className="w-full border rounded-xl p-3"
+              className="w-full rounded-lg border p-3"
               placeholder="Véhicule / plaque"
               value={form.vehiclePlate}
               onChange={(e) => setForm({ ...form, vehiclePlate: e.target.value })}
             />
             <input
-              className="w-full border rounded-xl p-3"
+              className="w-full rounded-lg border p-3"
               placeholder="Client ou site autorisé"
               value={form.authorizedSite}
               onChange={(e) => setForm({ ...form, authorizedSite: e.target.value })}
@@ -282,7 +304,7 @@ export default function NewEmployeePage() {
 
           <div className="grid gap-4 md:grid-cols-2">
             <select
-              className="w-full border rounded-xl p-3"
+              className="w-full rounded-lg border p-3"
               value={form.status}
               onChange={(e) => setForm({ ...form, status: e.target.value })}
             >
@@ -297,7 +319,7 @@ export default function NewEmployeePage() {
                 type="date"
                 value={form.expiresAt}
                 onChange={(e) => setForm({ ...form, expiresAt: e.target.value })}
-                className="w-full rounded-xl border px-4 py-3"
+                className="w-full rounded-lg border px-4 py-3"
               />
             </div>
           </div>
@@ -305,9 +327,9 @@ export default function NewEmployeePage() {
           <div className="pt-2">
             <button
               type="submit"
-              className="bg-black text-white px-5 py-3 rounded-xl"
+              className="rounded-lg bg-black px-5 py-3 text-white"
             >
-              Creer le collaborateur
+              Créer le collaborateur
             </button>
           </div>
         </form>
