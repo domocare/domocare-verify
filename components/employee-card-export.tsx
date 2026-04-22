@@ -217,14 +217,8 @@ export default function EmployeeCardExport({
     ctx.font = "500 19px Arial, sans-serif";
     ctx.fillText("Carte d'intervention securisee par QR code", 76, 124);
 
-    ctx.fillStyle = "#ffffff";
-    drawRoundedRect(ctx, 136, 156, 256, 108, 18);
-    ctx.fill();
-    ctx.strokeStyle = "#e2e8f0";
-    ctx.lineWidth = 2;
-    ctx.stroke();
     if (logo) {
-      drawContainImage(ctx, logo, 186, 186, 156, 48);
+      drawContainImage(ctx, logo, 132, 154, 270, 92);
     }
 
     ctx.fillStyle = "#0f172a";
@@ -332,18 +326,15 @@ export default function EmployeeCardExport({
             }
             .brand { font-size: 9pt; font-weight: 800; color: #0f172a; }
             .subtitle { margin-top: 2pt; font-size: 5.8pt; color: #64748b; }
-            .logo-box {
-              width: 64pt;
-              height: 27pt;
-              margin: 8pt 0 10pt 15pt;
+            .logo-wrap {
+              width: 82pt;
+              height: 28pt;
+              margin: 8pt 0 9pt 6pt;
               display: flex;
               align-items: center;
               justify-content: center;
-              border: 0.6pt solid #e2e8f0;
-              border-radius: 5pt;
-              background: white;
             }
-            .logo { max-width: 46pt; max-height: 13pt; object-fit: contain; }
+            .logo { max-width: 78pt; max-height: 24pt; object-fit: contain; }
             h1 { margin: 0; text-align: center; font-size: 11pt; line-height: 1.08; }
             .job { margin-top: 4pt; text-align: center; font-size: 6.8pt; color: #475569; text-transform: uppercase; }
             dl { margin: 11pt 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6pt 10pt; }
@@ -363,7 +354,7 @@ export default function EmployeeCardExport({
             <section>
               <div class="brand">Lantana Verify</div>
               <div class="subtitle">Carte d'intervention securisee par QR code</div>
-              <div class="logo-box"><img class="logo" src="${escaped.logoUrl}" alt="Logo"></div>
+              <div class="logo-wrap"><img class="logo" src="${escaped.logoUrl}" alt="Logo"></div>
               <h1>${escaped.fullName}</h1>
               <div class="job">${escaped.jobTitle}</div>
               <dl>
