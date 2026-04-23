@@ -89,3 +89,42 @@ export async function PATCH(req: Request) {
 
   return Response.json({ ok: true, interventionType });
 }
+
+export async function DELETE(req: Request) {
+  const authError = await requireRole(req, [
+    "SUPER_ADMIN_GROUP",
+    "SECURITY_ADMIN",
+    "AGENCY_ADMIN",
+    "ADMIN_ASSISTANT",
+  ]);
+  if (authError) return authError;
+
+  const body = await req.json();
+  const id = readText(body.id);
+
+  if (!id) {
+    return Response.json({ ok: false, message: "Identifiant manquant." }, { status: 400 });
+  }
+
+  const linkedEmployees = await prisma.employee.count({
+    where: {
+      interventionTypeId: id,
+    },
+  });
+
+  if (linkedEmployees > 0) {
+    return Response.json(
+      {
+        ok: false,
+        message: "Ce type d'intervention est utilisé sur des collaborateurs. Désactivez-le ou modifiez les fiches avant suppression.",
+      },
+      { status: 409 },
+    );
+  }
+
+  await prisma.interventionType.delete({
+    where: { id },
+  });
+
+  return Response.json({ ok: true });
+}
