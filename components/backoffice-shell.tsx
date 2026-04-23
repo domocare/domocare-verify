@@ -9,6 +9,7 @@ import {
   FileClock,
   LayoutDashboard,
   LogOut,
+  MessageSquareWarning,
   Plus,
   Search,
   Settings,
@@ -32,6 +33,7 @@ const navSections = [
       { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
       { href: "/analytics", label: "Pilotage", icon: BarChart3 },
       { href: "/scans", label: "Scans terrain", icon: FileClock },
+      { href: "/incidents", label: "Signalements", icon: MessageSquareWarning },
     ],
   },
   {
