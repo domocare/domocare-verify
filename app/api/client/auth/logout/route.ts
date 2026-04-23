@@ -13,5 +13,7 @@ export async function POST() {
     maxAge: 0,
   });
 
-  return NextResponse.redirect(new URL("/client/login", getAppUrl()));
+  return NextResponse.redirect(new URL("/client/login", getAppUrl()), {
+    status: 303,
+  });
 }
