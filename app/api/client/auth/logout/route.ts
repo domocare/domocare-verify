@@ -1,5 +1,7 @@
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 import { CUSTOMER_SESSION_COOKIE } from "@/lib/customer-session";
+import { getAppUrl } from "@/lib/urls";
 
 export async function POST() {
   const cookieStore = await cookies();
@@ -11,5 +13,5 @@ export async function POST() {
     maxAge: 0,
   });
 
-  return Response.json({ ok: true });
+  return NextResponse.redirect(new URL("/client/login", getAppUrl()));
 }
