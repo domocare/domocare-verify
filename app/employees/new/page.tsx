@@ -28,6 +28,27 @@ type AgencyItem = SettingItem & {
   director?: string | null;
 };
 
+type InterventionTypeItem = SettingItem & {
+  description?: string | null;
+  isActive: boolean;
+};
+
+type CustomerSiteItem = {
+  id: string;
+  customerId: string;
+  name: string;
+  address?: string | null;
+  postalCode?: string | null;
+  city?: string | null;
+  codeRequired: boolean;
+  isActive: boolean;
+};
+
+type CustomerItem = SettingItem & {
+  accessCodeEnabled: boolean;
+  sites: CustomerSiteItem[];
+};
+
 type OptionsResponse = {
   companies: CompanyItem[];
   agencies: AgencyItem[];
@@ -49,7 +70,10 @@ export default function NewEmployeePage() {
     agency: "",
     photoUrl: "",
     phoneAgency: "",
+    interventionTypeId: "",
     interventionType: "",
+    customerId: "",
+    customerSiteId: "",
     vehiclePlate: "",
     authorizedSite: "",
     status: "active",
@@ -58,20 +82,32 @@ export default function NewEmployeePage() {
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [companies, setCompanies] = useState<CompanyItem[]>([]);
   const [agencies, setAgencies] = useState<AgencyItem[]>([]);
+  const [interventionTypes, setInterventionTypes] = useState<InterventionTypeItem[]>([]);
+  const [customers, setCustomers] = useState<CustomerItem[]>([]);
   const [settingsError, setSettingsError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadSettings() {
-      const res = await fetch("/api/settings/options");
+      const [res, interventionsRes, customersRes] = await Promise.all([
+        fetch("/api/settings/options"),
+        fetch("/api/intervention-types"),
+        fetch("/api/customers"),
+      ]);
 
-      if (!res.ok) {
-        setSettingsError("Impossible de charger les sociétés et agences.");
+      if (!res.ok || !interventionsRes.ok || !customersRes.ok) {
+        setSettingsError("Impossible de charger les référentiels.");
         return;
       }
 
       const data = (await res.json()) as OptionsResponse;
+      const interventionsData = (await interventionsRes.json()) as {
+        interventionTypes: InterventionTypeItem[];
+      };
+      const customersData = (await customersRes.json()) as { customers: CustomerItem[] };
       setCompanies(data.companies);
       setAgencies(data.agencies);
+      setInterventionTypes(interventionsData.interventionTypes.filter((item) => item.isActive));
+      setCustomers(customersData.customers);
     }
 
     void loadSettings();
@@ -136,6 +172,8 @@ export default function NewEmployeePage() {
   const selectedAgencyPhones = Array.from(
     new Set(selectedAgencies.map((agency) => agency.phone).filter(Boolean)),
   );
+  const selectedCustomer = customers.find((customer) => customer.id === form.customerId);
+  const availableSites = selectedCustomer?.sites.filter((site) => site.isActive) || [];
 
   return (
     <BackofficeShell
@@ -282,25 +320,75 @@ export default function NewEmployeePage() {
           ) : null}
 
           <div className="grid gap-4 md:grid-cols-3">
-            <input
+            <select
               className="w-full rounded-lg border p-3"
-              placeholder="Type intervention autorisée"
-              value={form.interventionType}
-              onChange={(e) => setForm({ ...form, interventionType: e.target.value })}
-            />
+              value={form.interventionTypeId}
+              onChange={(e) => {
+                const intervention = interventionTypes.find((item) => item.id === e.target.value);
+                setForm({
+                  ...form,
+                  interventionTypeId: e.target.value,
+                  interventionType: intervention?.name || "",
+                });
+              }}
+            >
+              <option value="">Type intervention autorisée</option>
+              {interventionTypes.map((intervention) => (
+                <option key={intervention.id} value={intervention.id}>
+                  {intervention.name}
+                </option>
+              ))}
+            </select>
             <input
               className="w-full rounded-lg border p-3"
               placeholder="Véhicule / plaque"
               value={form.vehiclePlate}
               onChange={(e) => setForm({ ...form, vehiclePlate: e.target.value })}
             />
-            <input
+            <select
               className="w-full rounded-lg border p-3"
-              placeholder="Client ou site autorisé"
-              value={form.authorizedSite}
-              onChange={(e) => setForm({ ...form, authorizedSite: e.target.value })}
-            />
+              value={form.customerId}
+              onChange={(e) => {
+                const customer = customers.find((item) => item.id === e.target.value);
+                setForm({
+                  ...form,
+                  customerId: e.target.value,
+                  customerSiteId: "",
+                  authorizedSite: customer?.name || "",
+                });
+              }}
+            >
+              <option value="">Client ou site autorisé</option>
+              {customers.map((customer) => (
+                <option key={customer.id} value={customer.id}>
+                  {customer.name}
+                </option>
+              ))}
+            </select>
           </div>
+
+          {selectedCustomer ? (
+            <select
+              className="w-full rounded-lg border p-3"
+              value={form.customerSiteId}
+              onChange={(e) => {
+                const site = availableSites.find((item) => item.id === e.target.value);
+                setForm({
+                  ...form,
+                  customerSiteId: e.target.value,
+                  authorizedSite: site ? `${selectedCustomer.name} - ${site.name}` : selectedCustomer.name,
+                });
+              }}
+            >
+              <option value="">Tous les sites du client</option>
+              {availableSites.map((site) => (
+                <option key={site.id} value={site.id}>
+                  {site.name}
+                  {site.codeRequired ? " - code requis" : ""}
+                </option>
+              ))}
+            </select>
+          ) : null}
 
           <div className="grid gap-4 md:grid-cols-2">
             <select

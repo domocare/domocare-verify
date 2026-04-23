@@ -126,6 +126,9 @@ async function getEmployeeByToken(token: string) {
     include: {
       qrToken: true,
       authorization: true,
+      interventionTypeRef: true,
+      customer: true,
+      customerSite: true,
     },
   });
 }
@@ -292,6 +295,10 @@ function PublicEmployeeSummary({
 }) {
   const meta = getStateMeta(state);
   const validUntil = employee.authorization?.validUntil || employee.qrToken?.expiresAt;
+  const authorizedSite =
+    employee.customer && employee.customerSite
+      ? `${employee.customer.name} - ${employee.customerSite.name}`
+      : employee.customer?.name || employee.authorizedSite;
 
   return (
     <div>
@@ -329,9 +336,20 @@ function PublicEmployeeSummary({
           <PublicInfo label="Validite" value={validUntil ? `Jusqu'au ${formatDate(validUntil)}` : "-"} />
           <PublicInfo label="Type d'intervention" value={employee.interventionType} />
           <PublicInfo label="Véhicule" value={employee.vehiclePlate} />
-          <PublicInfo label="Site ou client autorisé" value={employee.authorizedSite} />
+          <PublicInfo label="Site ou client autorisé" value={authorizedSite} />
           <PublicInfo label="Contact agence" value={employee.phoneAgency} />
         </div>
+
+        {employee.interventionTypeRef?.description ? (
+          <div className="mt-3 rounded-lg bg-slate-50 p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+              Précisions intervention
+            </p>
+            <p className="mt-2 text-sm font-semibold leading-6 text-slate-950">
+              {employee.interventionTypeRef.description}
+            </p>
+          </div>
+        ) : null}
 
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
           {employee.phoneAgency ? (

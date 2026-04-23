@@ -3,9 +3,11 @@ import { ReactNode } from "react";
 import {
   BarChart3,
   Bell,
+  BriefcaseBusiness,
   Building2,
   ChevronRight,
   CircleHelp,
+  ClipboardList,
   FileClock,
   KeyRound,
   LayoutDashboard,
@@ -42,6 +44,8 @@ const navSections = [
     items: [
       { href: "/employees", label: "Collaborateurs", icon: Users },
       { href: "/employees/new", label: "Ajouter", icon: Plus },
+      { href: "/intervention-types", label: "Interventions", icon: ClipboardList },
+      { href: "/customers", label: "Clients / sites", icon: BriefcaseBusiness },
       { href: "/users", label: "Utilisateurs", icon: UserRound },
     ],
   },
