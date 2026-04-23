@@ -129,5 +129,8 @@ model IncidentReport {
   clientName  String?
   phone       String?
   email       String?
+  status      String   @default("todo")
+  adminComment String?
+  treatedAt   DateTime?
   createdAt   DateTime @default(now())
 }

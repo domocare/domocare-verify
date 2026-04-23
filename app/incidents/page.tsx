@@ -1,7 +1,17 @@
 import Link from "next/link";
 import type { ComponentType } from "react";
 import { connection } from "next/server";
-import { AlertTriangle, Car, CircleHelp, Clock3, Mail, Phone, UserRound } from "lucide-react";
+import {
+  AlertTriangle,
+  Car,
+  CircleHelp,
+  Clock3,
+  Mail,
+  MessageSquareText,
+  Phone,
+  UserRound,
+} from "lucide-react";
+import { updateIncidentWorkflow } from "./actions";
 import BackofficeShell from "@/components/backoffice-shell";
 import DatabaseErrorPanel from "@/components/database-error-panel";
 import { prisma } from "@/lib/prisma";
@@ -92,7 +102,9 @@ async function getIncidents() {
   }));
 }
 
-function formatDate(date: Date) {
+function formatDate(date: Date | null) {
+  if (!date) return "Non renseigné";
+
   return new Intl.DateTimeFormat("fr-FR", {
     dateStyle: "short",
     timeStyle: "short",
@@ -111,7 +123,8 @@ export default async function IncidentsPage() {
   }
 
   const total = incidents?.length || 0;
-  const linked = incidents?.filter((incident) => incident.employee).length || 0;
+  const todo = incidents?.filter((incident) => incident.status !== "done").length || 0;
+  const done = incidents?.filter((incident) => incident.status === "done").length || 0;
 
   return (
     <BackofficeShell
@@ -130,8 +143,8 @@ export default async function IncidentsPage() {
         <div className="space-y-5">
           <div className="grid gap-4 md:grid-cols-3">
             <Metric label="Signalements" value={total} />
-            <Metric label="Liés à un collaborateur" value={linked} />
-            <Metric label="Non rattachés" value={total - linked} />
+            <Metric label="À traiter" value={todo} tone="text-red-700" />
+            <Metric label="Traités" value={done} tone="text-emerald-700" />
           </div>
 
           <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
@@ -142,14 +155,18 @@ export default async function IncidentsPage() {
                 {incidents.map((incident) => {
                   const reason = reasonLabels[incident.reason] || reasonLabels.other;
                   const Icon = reason.icon;
+                  const isDone = incident.status === "done";
 
                   return (
-                    <article key={incident.id} className="grid gap-4 p-5 xl:grid-cols-[260px_1fr_280px]">
+                    <article key={incident.id} className="grid gap-4 p-5 xl:grid-cols-[260px_1fr_320px]">
                       <div>
-                        <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-bold ${reason.tone}`}>
-                          <Icon className="h-3.5 w-3.5" />
-                          {reason.label}
-                        </span>
+                        <div className="flex flex-wrap gap-2">
+                          <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-bold ${reason.tone}`}>
+                            <Icon className="h-3.5 w-3.5" />
+                            {reason.label}
+                          </span>
+                          <StatusBadge isDone={isDone} />
+                        </div>
                         <p className="mt-3 text-sm font-semibold text-slate-900">
                           {formatDate(incident.createdAt)}
                         </p>
@@ -177,6 +194,22 @@ export default async function IncidentsPage() {
                             {incident.description || "Aucune description fournie."}
                           </p>
                         </div>
+
+                        {incident.adminComment ? (
+                          <div className="mt-3 rounded-lg border border-emerald-100 bg-emerald-50 p-4">
+                            <p className="text-xs font-bold uppercase tracking-[0.12em] text-emerald-700">
+                              Commentaire back-office
+                            </p>
+                            <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-700">
+                              {incident.adminComment}
+                            </p>
+                            {incident.treatedAt ? (
+                              <p className="mt-2 text-xs font-semibold text-emerald-700">
+                                Traité le {formatDate(incident.treatedAt)}
+                              </p>
+                            ) : null}
+                          </div>
+                        ) : null}
                       </div>
 
                       <div className="space-y-3 rounded-lg bg-slate-50 p-4">
@@ -187,11 +220,57 @@ export default async function IncidentsPage() {
                         {incident.employee ? (
                           <Link
                             href={`/employees/${incident.employee.id}`}
-                            className="mt-2 inline-flex w-full justify-center rounded-lg bg-slate-950 px-4 py-2 text-sm font-semibold text-white"
+                            className="inline-flex w-full justify-center rounded-lg bg-slate-950 px-4 py-2 text-sm font-semibold text-white"
                           >
                             Ouvrir la fiche
                           </Link>
                         ) : null}
+
+                        <details className="group rounded-lg border border-slate-200 bg-white">
+                          <summary className="flex cursor-pointer list-none items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold text-[#006b55]">
+                            <MessageSquareText className="h-4 w-4" />
+                            Commentaire
+                          </summary>
+                          <form action={updateIncidentWorkflow} className="space-y-3 border-t border-slate-100 p-3">
+                            <input type="hidden" name="id" value={incident.id} />
+                            <label className="block text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
+                              État
+                            </label>
+                            <div className="grid grid-cols-2 gap-2">
+                              <label className="flex items-center justify-center gap-2 rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-xs font-bold text-red-700">
+                                <input
+                                  type="radio"
+                                  name="status"
+                                  value="todo"
+                                  defaultChecked={!isDone}
+                                />
+                                À traiter
+                              </label>
+                              <label className="flex items-center justify-center gap-2 rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700">
+                                <input
+                                  type="radio"
+                                  name="status"
+                                  value="done"
+                                  defaultChecked={isDone}
+                                />
+                                Traité
+                              </label>
+                            </div>
+                            <textarea
+                              name="adminComment"
+                              defaultValue={incident.adminComment || ""}
+                              rows={4}
+                              className="w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-[#006b55] focus:ring-2 focus:ring-emerald-100"
+                              placeholder="Réponse ou action menée..."
+                            />
+                            <button
+                              type="submit"
+                              className="w-full rounded-lg bg-[#006b55] px-4 py-2 text-sm font-bold text-white transition hover:bg-[#005844]"
+                            >
+                              Enregistrer
+                            </button>
+                          </form>
+                        </details>
                       </div>
                     </article>
                   );
@@ -207,11 +286,33 @@ export default async function IncidentsPage() {
   );
 }
 
-function Metric({ label, value }: { label: string; value: number }) {
+function StatusBadge({ isDone }: { isDone: boolean }) {
+  return (
+    <span
+      className={
+        isDone
+          ? "inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700"
+          : "inline-flex rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-black text-red-700"
+      }
+    >
+      {isDone ? "Traité" : "À traiter"}
+    </span>
+  );
+}
+
+function Metric({
+  label,
+  value,
+  tone = "text-slate-950",
+}: {
+  label: string;
+  value: number;
+  tone?: string;
+}) {
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
       <p className="text-sm font-semibold text-slate-500">{label}</p>
-      <p className="mt-2 text-3xl font-black text-slate-950">{value}</p>
+      <p className={`mt-2 text-3xl font-black ${tone}`}>{value}</p>
     </div>
   );
 }
