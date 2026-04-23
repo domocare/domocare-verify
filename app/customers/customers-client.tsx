@@ -79,10 +79,15 @@ export default function CustomersClient() {
   const [customerForm, setCustomerForm] = useState(emptyCustomerForm);
   const [siteForm, setSiteForm] = useState(emptySiteForm);
   const [message, setMessage] = useState<string | null>(null);
+  const [isSendingReset, setIsSendingReset] = useState(false);
 
   const selectedCustomer = useMemo(
     () => customers.find((customer) => customer.id === siteForm.customerId) || customers[0],
     [customers, siteForm.customerId],
+  );
+  const editingCustomer = useMemo(
+    () => customers.find((customer) => customer.id === customerForm.id) || null,
+    [customers, customerForm.id],
   );
 
   async function loadCustomers() {
@@ -183,6 +188,39 @@ export default function CustomersClient() {
 
     setSiteForm({ ...emptySiteForm, customerId });
     await loadCustomers();
+  }
+
+  async function sendResetPassword() {
+    if (!customerForm.id) return;
+
+    setMessage(null);
+    setIsSendingReset(true);
+
+    const res = await fetch("/api/customers/reset-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ customerId: customerForm.id }),
+    });
+
+    const data = (await res.json().catch(() => null)) as
+      | { message?: string; delivered?: number; skipped?: boolean; recipients?: string[] }
+      | null;
+
+    if (!res.ok) {
+      setMessage(data?.message || "Le mail de réinitialisation n'a pas pu être envoyé.");
+      setIsSendingReset(false);
+      return;
+    }
+
+    if (data?.skipped) {
+      setMessage("Le bouton a bien été lancé, mais aucun service d'email n'est configuré sur le serveur.");
+    } else {
+      setMessage(
+        `Mail de réinitialisation envoyé à ${data?.delivered || 0} contact(s) : ${(data?.recipients || []).join(", ")}`,
+      );
+    }
+
+    setIsSendingReset(false);
   }
 
   return (
@@ -346,6 +384,21 @@ export default function CustomersClient() {
           <button className="rounded-lg bg-slate-950 px-4 py-3 text-sm font-bold text-white">
             Enregistrer le client final
           </button>
+          {customerForm.id && editingCustomer?.clientPortalEnabled ? (
+            <button
+              type="button"
+              onClick={() => void sendResetPassword()}
+              disabled={isSendingReset}
+              className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-800 disabled:opacity-60"
+            >
+              {isSendingReset ? "Envoi..." : "Réinitialiser le mot de passe"}
+            </button>
+          ) : null}
+          {customerForm.id && editingCustomer?.clientPortalEnabled ? (
+            <p className="text-xs leading-5 text-slate-500">
+              Un mail de réinitialisation sera envoyé au contact principal et aux utilisateurs actifs du portail.
+            </p>
+          ) : null}
         </form>
       </section>
 
