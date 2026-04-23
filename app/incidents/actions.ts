@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
+import { getAccessContext, getIncidentScopeWhere } from "@/lib/access-control";
 import { SESSION_COOKIE, verifySessionToken } from "@/lib/session";
 
 function readText(formData: FormData, key: string) {
@@ -21,6 +22,11 @@ async function requireSession() {
 
 export async function updateIncidentWorkflow(formData: FormData) {
   await requireSession();
+  const access = await getAccessContext();
+
+  if (!access?.permission.canManageIncidents) {
+    throw new Error("Forbidden");
+  }
 
   const id = readText(formData, "id");
   const status = readText(formData, "status") === "done" ? "done" : "todo";
@@ -30,8 +36,20 @@ export async function updateIncidentWorkflow(formData: FormData) {
     throw new Error("Signalement introuvable.");
   }
 
+  const incident = await prisma.incidentReport.findFirst({
+    where: {
+      id,
+      ...(await getIncidentScopeWhere(access)),
+    },
+    select: { id: true },
+  });
+
+  if (!incident) {
+    throw new Error("Forbidden");
+  }
+
   await prisma.incidentReport.update({
-    where: { id },
+    where: { id: incident.id },
     data: {
       status,
       adminComment,

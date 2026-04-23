@@ -7,6 +7,7 @@ import BackofficeShell from "@/components/backoffice-shell";
 import DatabaseErrorPanel from "@/components/database-error-panel";
 import EmployeeCardExport from "@/components/employee-card-export";
 import { prisma } from "@/lib/prisma";
+import { getAccessContext, getEmployeeScopeWhere } from "@/lib/access-control";
 import { getVerifyUrl } from "@/lib/urls";
 import {
   reactivateEmployee,
@@ -104,9 +105,12 @@ export default async function EmployeeDetailPage({ params, searchParams }: Props
   let agencies: { id: string; name: string; companyId: string | null }[] = [];
 
   try {
+    const access = await getAccessContext();
+    const scopedWhere = access ? getEmployeeScopeWhere(access) : { id: "__no_access__" };
+
     [employee, companies, agencies] = await Promise.all([
-      prisma.employee.findUnique({
-        where: { id },
+      prisma.employee.findFirst({
+        where: { id, ...scopedWhere },
         include: {
           authorization: true,
           qrToken: true,

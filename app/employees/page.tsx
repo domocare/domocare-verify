@@ -6,10 +6,15 @@ import DatabaseErrorPanel from "@/components/database-error-panel";
 import EmployeeCard from "@/components/employee-card";
 import EmployeeExcelActions from "@/components/employee-excel-actions";
 import { prisma } from "@/lib/prisma";
+import { getAccessContext, getEmployeeScopeWhere } from "@/lib/access-control";
 import { getVerifyUrl } from "@/lib/urls";
 
 async function getEmployeesWithQr() {
+  const access = await getAccessContext();
+  if (!access) return [];
+
   const employees = await prisma.employee.findMany({
+    where: getEmployeeScopeWhere(access),
     include: {
       authorization: true,
       qrToken: true,

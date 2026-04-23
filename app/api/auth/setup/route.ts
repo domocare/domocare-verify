@@ -70,6 +70,8 @@ export async function POST(req: Request) {
     email: user.email,
     role: user.role,
     name: `${user.firstName} ${user.lastName}`,
+    company: user.company,
+    agency: user.agency,
   });
 
   const cookieStore = await cookies();

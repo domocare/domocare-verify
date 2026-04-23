@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth-middleware";
+import { getAccessContextFromRequest } from "@/lib/access-control";
 import crypto from "crypto";
 
 function generateToken() {
@@ -26,6 +27,11 @@ export async function POST(req: Request) {
   if (authError) return authError;
 
   try {
+    const access = await getAccessContextFromRequest(req);
+    if (!access?.permission.canManageEmployees) {
+      return Response.json({ ok: false }, { status: 403 });
+    }
+
     const body = await req.json();
     const photoUrl = typeof body.photoUrl === "string" ? body.photoUrl : "";
 
@@ -38,6 +44,18 @@ export async function POST(req: Request) {
     }
 
     const agencyNames = splitAgencyNames(body.agency);
+
+    if (access.permission.dataScope === "company" && body.company !== access.user.company) {
+      return Response.json({ ok: false, message: "Société hors périmètre." }, { status: 403 });
+    }
+
+    if (access.permission.dataScope === "agency") {
+      const agencyAllowed = Boolean(access.user.agency) && agencyNames.includes(access.user.agency || "");
+
+      if (body.company !== access.user.company || !agencyAllowed) {
+        return Response.json({ ok: false, message: "Agence hors périmètre." }, { status: 403 });
+      }
+    }
 
     if (body.company && agencyNames.length > 0) {
       const selectedAgencies = await prisma.agency.findMany({

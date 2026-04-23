@@ -4,16 +4,30 @@ import { prisma } from "@/lib/prisma";
 import BackofficeShell from "@/components/backoffice-shell";
 import DatabaseErrorPanel from "@/components/database-error-panel";
 import DashboardOverview from "../dashboard-overview";
+import { getAccessContext, getEmployeeScopeWhere, getScanScopeWhere } from "@/lib/access-control";
 
 async function getDashboardData() {
+  const access = await getAccessContext();
+  if (!access) {
+    return {
+      stats: { employees: 0, active: 0, expired: 0, suspended: 0, scans: 0 },
+      employees: [],
+      scans: [],
+    };
+  }
+
+  const employeeWhere = getEmployeeScopeWhere(access);
+  const scanWhere = await getScanScopeWhere(access);
+
   const [employees, active, expired, suspended, scans, employeeRows, scanRows] =
     await Promise.all([
-      prisma.employee.count(),
-      prisma.authorization.count({ where: { status: "active" } }),
-      prisma.authorization.count({ where: { status: "expired" } }),
-      prisma.authorization.count({ where: { status: { in: ["revoked", "suspended"] } } }),
-      prisma.scanLog.count(),
+      prisma.employee.count({ where: employeeWhere }),
+      prisma.authorization.count({ where: { status: "active", employee: employeeWhere } }),
+      prisma.authorization.count({ where: { status: "expired", employee: employeeWhere } }),
+      prisma.authorization.count({ where: { status: { in: ["revoked", "suspended"] }, employee: employeeWhere } }),
+      prisma.scanLog.count({ where: scanWhere }),
       prisma.employee.findMany({
+        where: employeeWhere,
         orderBy: { createdAt: "desc" },
         take: 80,
         include: {
@@ -22,6 +36,7 @@ async function getDashboardData() {
         },
       }),
       prisma.scanLog.findMany({
+        where: scanWhere,
         orderBy: { createdAt: "desc" },
         take: 8,
       }),

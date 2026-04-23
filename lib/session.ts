@@ -7,6 +7,8 @@ export type SessionPayload = {
   email: string;
   role: string;
   name: string;
+  company?: string | null;
+  agency?: string | null;
   exp: number;
 };
 

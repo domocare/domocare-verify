@@ -14,6 +14,7 @@ import {
 import { updateIncidentWorkflow } from "./actions";
 import BackofficeShell from "@/components/backoffice-shell";
 import DatabaseErrorPanel from "@/components/database-error-panel";
+import { getAccessContext, getIncidentScopeWhere } from "@/lib/access-control";
 import { prisma } from "@/lib/prisma";
 
 type ReasonLabel = {
@@ -56,7 +57,11 @@ const reasonLabels: Record<string, ReasonLabel> = {
 };
 
 async function getIncidents() {
+  const access = await getAccessContext();
+  if (!access || !access.permission.canManageIncidents) return [];
+
   const incidents = await prisma.incidentReport.findMany({
+    where: await getIncidentScopeWhere(access),
     orderBy: { createdAt: "desc" },
   });
 

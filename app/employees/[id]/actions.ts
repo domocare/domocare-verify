@@ -4,6 +4,7 @@ import crypto from "crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { getAccessContext, getEmployeeScopeWhere } from "@/lib/access-control";
 
 function generateToken() {
   return crypto.randomBytes(16).toString("hex");
@@ -69,7 +70,29 @@ async function ensureSettings(company: string | null, agencies: string[]) {
   }
 }
 
+async function ensureEmployeeAccess(employeeId: string, requireManage = true) {
+  const access = await getAccessContext();
+
+  if (!access || (requireManage && !access.permission.canManageEmployees)) {
+    throw new Error("Forbidden");
+  }
+
+  const employee = await prisma.employee.findFirst({
+    where: {
+      id: employeeId,
+      ...getEmployeeScopeWhere(access),
+    },
+    select: { id: true },
+  });
+
+  if (!employee) {
+    throw new Error("Forbidden");
+  }
+}
+
 export async function updateEmployee(employeeId: string, formData: FormData) {
+  await ensureEmployeeAccess(employeeId);
+
   const firstName = readText(formData, "firstName");
   const lastName = readText(formData, "lastName");
 
@@ -158,6 +181,8 @@ export async function updateEmployee(employeeId: string, formData: FormData) {
 }
 
 export async function suspendEmployee(employeeId: string) {
+  await ensureEmployeeAccess(employeeId);
+
   const now = new Date();
 
   await prisma.$transaction([
@@ -191,6 +216,8 @@ export async function suspendEmployee(employeeId: string) {
 }
 
 export async function reactivateEmployee(employeeId: string) {
+  await ensureEmployeeAccess(employeeId);
+
   const now = new Date();
 
   await prisma.$transaction([
@@ -231,6 +258,8 @@ export async function reactivateEmployee(employeeId: string) {
 }
 
 export async function regenerateQrToken(employeeId: string) {
+  await ensureEmployeeAccess(employeeId);
+
   const now = new Date();
   const token = generateToken();
 

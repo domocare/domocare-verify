@@ -3,9 +3,14 @@ import { prisma } from "@/lib/prisma";
 import BackofficeShell from "@/components/backoffice-shell";
 import DatabaseErrorPanel from "@/components/database-error-panel";
 import { BadgeCheck, Clock3, ShieldAlert } from "lucide-react";
+import { getAccessContext, getScanScopeWhere } from "@/lib/access-control";
 
 async function getScans() {
+  const access = await getAccessContext();
+  if (!access || !access.permission.canViewScans) return [];
+
   return prisma.scanLog.findMany({
+    where: await getScanScopeWhere(access),
     orderBy: {
       createdAt: "desc",
     },

@@ -7,6 +7,7 @@ import {
   ChevronRight,
   CircleHelp,
   FileClock,
+  KeyRound,
   LayoutDashboard,
   LogOut,
   MessageSquareWarning,
@@ -48,6 +49,7 @@ const navSections = [
     label: "Administration",
     items: [
       { href: "/security", label: "Sécurité", icon: ShieldCheck },
+      { href: "/permissions", label: "Droits", icon: KeyRound },
       { href: "/settings", label: "Paramétrage", icon: Settings },
     ],
   },
