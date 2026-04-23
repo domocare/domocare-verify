@@ -35,21 +35,6 @@ export async function GET(req: Request) {
       sites: {
         orderBy: [{ isActive: "desc" }, { name: "asc" }],
       },
-      accessCodes: {
-        orderBy: [{ isActive: "desc" }, { createdAt: "desc" }],
-        select: {
-          id: true,
-          siteId: true,
-          label: true,
-          codeLast4: true,
-          scope: true,
-          isOneTime: true,
-          isActive: true,
-          expiresAt: true,
-          usedAt: true,
-          createdAt: true,
-        },
-      },
     },
   });
 
@@ -71,6 +56,9 @@ export async function POST(req: Request) {
     where: { name },
     create: {
       name,
+      email: readText(body.email),
+      logoUrl: readText(body.logoUrl),
+      brandColor: readText(body.brandColor),
       siret: readText(body.siret),
       address: readText(body.address),
       postalCode: readText(body.postalCode),
@@ -84,6 +72,9 @@ export async function POST(req: Request) {
     },
     update: {
       siret: readText(body.siret),
+      email: readText(body.email),
+      logoUrl: readText(body.logoUrl),
+      brandColor: readText(body.brandColor),
       address: readText(body.address),
       postalCode: readText(body.postalCode),
       city: readText(body.city),
@@ -121,6 +112,9 @@ export async function PATCH(req: Request) {
     where: { id },
     data: {
       name,
+      email: readText(body.email),
+      logoUrl: readText(body.logoUrl),
+      brandColor: readText(body.brandColor),
       siret: readText(body.siret),
       address: readText(body.address),
       postalCode: readText(body.postalCode),

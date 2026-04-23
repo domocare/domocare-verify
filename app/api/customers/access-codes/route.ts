@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/password";
-import { requireRole } from "@/lib/auth-middleware";
+import { getCustomerSessionFromRequest } from "@/lib/customer-auth";
 
 function readText(value: unknown) {
   return typeof value === "string" && value.trim() ? value.trim() : null;
@@ -11,21 +11,14 @@ function readCode(value: unknown) {
   return code && /^\d{6,8}$/.test(code) ? code : null;
 }
 
-async function ensureWriteAccess(req: Request) {
-  return requireRole(req, [
-    "SUPER_ADMIN_GROUP",
-    "SECURITY_ADMIN",
-    "AGENCY_ADMIN",
-    "ADMIN_ASSISTANT",
-  ]);
-}
-
 export async function POST(req: Request) {
-  const authError = await ensureWriteAccess(req);
-  if (authError) return authError;
+  const customerSession = await getCustomerSessionFromRequest(req);
+  if (!customerSession?.portalCanViewCodes) {
+    return Response.json({ ok: false }, { status: 403 });
+  }
 
   const body = await req.json();
-  const customerId = readText(body.customerId);
+  const customerId = customerSession.id;
   const siteId = readText(body.siteId);
   const label = readText(body.label) || "Code d'accès";
   const code = readCode(body.code);
@@ -81,8 +74,10 @@ export async function POST(req: Request) {
 }
 
 export async function PATCH(req: Request) {
-  const authError = await ensureWriteAccess(req);
-  if (authError) return authError;
+  const customerSession = await getCustomerSessionFromRequest(req);
+  if (!customerSession?.portalCanViewCodes) {
+    return Response.json({ ok: false }, { status: 403 });
+  }
 
   const body = await req.json();
   const id = readText(body.id);
@@ -91,8 +86,19 @@ export async function PATCH(req: Request) {
     return Response.json({ ok: false, message: "Identifiant manquant." }, { status: 400 });
   }
 
+  const existing = await prisma.customerAccessCode.findFirst({
+    where: {
+      id,
+      customerId: customerSession.id,
+    },
+  });
+
+  if (!existing) {
+    return Response.json({ ok: false }, { status: 404 });
+  }
+
   const accessCode = await prisma.customerAccessCode.update({
-    where: { id },
+    where: { id: existing.id },
     data: {
       isActive: body.isActive === true,
     },

@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SESSION_COOKIE, verifySessionToken } from "@/lib/session";
+import {
+  CUSTOMER_SESSION_COOKIE,
+  verifyCustomerSessionToken,
+} from "@/lib/customer-session";
 
 const PUBLIC_PATHS = [
   "/",
@@ -7,7 +11,10 @@ const PUBLIC_PATHS = [
   "/setup",
   "/verify",
   "/report",
+  "/client/login",
+  "/client/setup",
   "/api/auth",
+  "/api/client/auth",
   "/api/incidents",
   "/favicon.ico",
 ];
@@ -21,6 +28,21 @@ function isPublicPath(pathname: string) {
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const session = verifySessionToken(request.cookies.get(SESSION_COOKIE)?.value);
+  const customerSession = verifyCustomerSessionToken(
+    request.cookies.get(CUSTOMER_SESSION_COOKIE)?.value,
+  );
+
+  if (pathname.startsWith("/client")) {
+    if (customerSession && (pathname === "/client/login" || pathname === "/client/setup")) {
+      return NextResponse.redirect(new URL("/client", request.url));
+    }
+
+    if (!customerSession && pathname !== "/client/login" && pathname !== "/client/setup") {
+      return NextResponse.redirect(new URL("/client/login", request.url));
+    }
+
+    return NextResponse.next();
+  }
 
   if (isPublicPath(pathname)) {
     if (session && (pathname === "/login" || pathname === "/setup")) {
