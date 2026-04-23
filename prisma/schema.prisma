@@ -196,6 +196,11 @@ model ScanLog {
   token     String
   result    String
   company   String?
+  customerId String?
+  customerName String?
+  customerSiteId String?
+  customerSiteName String?
+  accessCodeStatus String?
   latitude  Float?
   longitude Float?
   accuracy  Float?

@@ -35,6 +35,21 @@ export async function GET(req: Request) {
       sites: {
         orderBy: [{ isActive: "desc" }, { name: "asc" }],
       },
+      accessCodes: {
+        orderBy: [{ isActive: "desc" }, { createdAt: "desc" }],
+        select: {
+          id: true,
+          siteId: true,
+          label: true,
+          codeLast4: true,
+          scope: true,
+          isOneTime: true,
+          isActive: true,
+          expiresAt: true,
+          usedAt: true,
+          createdAt: true,
+        },
+      },
     },
   });
 
