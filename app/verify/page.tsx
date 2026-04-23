@@ -1,7 +1,6 @@
 import { connection } from "next/server";
 import { headers } from "next/headers";
 import CompanyLogo from "@/components/company-logo";
-import ScanLocationReporter from "@/components/scan-location-reporter";
 import { getCompanyBrand } from "@/lib/company-branding";
 import { prisma } from "@/lib/prisma";
 
@@ -61,14 +60,12 @@ function VerifyCard({
   message,
   company,
   companyLogoUrl,
-  scanId,
   children,
 }: {
   state: VerifyState;
   message?: string;
   company?: string | null;
   companyLogoUrl?: string | null;
-  scanId?: string | null;
   children?: React.ReactNode;
 }) {
   const meta = getStateMeta(state);
@@ -110,7 +107,6 @@ function VerifyCard({
             {children}
           </div>
         ) : null}
-        {scanId ? <ScanLocationReporter scanId={scanId} /> : null}
       </div>
     </main>
   );
@@ -140,16 +136,52 @@ async function logScan({
   company?: string | null;
 }) {
   const headersList = await headers();
+  const latitude = readHeaderNumber(headersList, "x-vercel-ip-latitude");
+  const longitude = readHeaderNumber(headersList, "x-vercel-ip-longitude");
+  const locationLabel = buildLocationLabel(headersList);
+  const hasLocation = Boolean(locationLabel) || (latitude !== null && longitude !== null);
 
   return prisma.scanLog.create({
     data: {
       token,
       result,
       company: company || null,
+      latitude,
+      longitude,
+      locationLabel,
+      locationSource: hasLocation ? "ip" : null,
+      locationCapturedAt: hasLocation ? new Date() : null,
       ipAddress: headersList.get("x-forwarded-for"),
       userAgent: headersList.get("user-agent"),
     },
   });
+}
+
+function readHeaderNumber(headersList: Headers, key: string) {
+  const value = headersList.get(key);
+  if (!value) return null;
+
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
+function readHeaderText(headersList: Headers, key: string) {
+  const value = headersList.get(key);
+  if (!value) return null;
+
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
+function buildLocationLabel(headersList: Headers) {
+  const city = readHeaderText(headersList, "x-vercel-ip-city");
+  const region = readHeaderText(headersList, "x-vercel-ip-country-region");
+  const country = readHeaderText(headersList, "x-vercel-ip-country");
+
+  return [city, region, country].filter(Boolean).join(", ") || null;
 }
 
 export default async function VerifyPage({
@@ -181,13 +213,12 @@ export default async function VerifyPage({
   }
 
   if (!employee || !employee.qrToken) {
-    const scan = await logScan({ token, result: "invalid" });
+    await logScan({ token, result: "invalid" });
 
     return (
       <VerifyCard
         state="invalid"
         message="QR code invalide ou introuvable"
-        scanId={scan.id}
       />
     );
   }
@@ -211,7 +242,7 @@ export default async function VerifyPage({
 
   if (isRevoked || isExpired) {
     const result = isRevoked ? "suspended" : "expired";
-    const scan = await logScan({ token, result, company: employee.company });
+    await logScan({ token, result, company: employee.company });
     const companyRecord = employee.company
       ? await prisma.company.findUnique({ where: { name: employee.company } })
       : null;
@@ -221,14 +252,13 @@ export default async function VerifyPage({
         state={isRevoked ? "suspended" : "expired"}
         company={employee.company}
         companyLogoUrl={companyRecord?.logoUrl}
-        scanId={scan.id}
       >
         <PublicEmployeeSummary token={token} employee={employee} state={isRevoked ? "suspended" : "expired"} />
       </VerifyCard>
     );
   }
 
-  const scan = await logScan({ token, result: "valid", company: employee.company });
+  await logScan({ token, result: "valid", company: employee.company });
   const companyRecord = employee.company
     ? await prisma.company.findUnique({ where: { name: employee.company } })
     : null;
@@ -238,7 +268,6 @@ export default async function VerifyPage({
       state="valid"
       company={employee.company}
       companyLogoUrl={companyRecord?.logoUrl}
-      scanId={scan.id}
     >
       <PublicEmployeeSummary token={token} employee={employee} state="valid" />
     </VerifyCard>

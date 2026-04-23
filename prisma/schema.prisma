@@ -113,6 +113,8 @@ model ScanLog {
   latitude  Float?
   longitude Float?
   accuracy  Float?
+  locationLabel String?
+  locationSource String?
   locationCapturedAt DateTime?
   ipAddress String?
   userAgent String?

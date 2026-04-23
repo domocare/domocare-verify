@@ -16,14 +16,26 @@ function formatLocation(scan: {
   latitude?: number | null;
   longitude?: number | null;
   accuracy?: number | null;
+  locationLabel?: string | null;
+  locationSource?: string | null;
 }) {
   if (scan.latitude === null || scan.latitude === undefined || scan.longitude === null || scan.longitude === undefined) {
+    if (scan.locationLabel) {
+      return {
+        label: scan.locationLabel,
+        accuracy: scan.locationSource === "ip" ? "Approximation réseau" : null,
+        url: null,
+        place: null,
+      };
+    }
+
     return null;
   }
 
   return {
+    place: scan.locationLabel || null,
     label: `${scan.latitude.toFixed(5)}, ${scan.longitude.toFixed(5)}`,
-    accuracy: scan.accuracy ? `± ${Math.round(scan.accuracy)} m` : null,
+    accuracy: scan.accuracy ? `± ${Math.round(scan.accuracy)} m` : "Approximation réseau",
     url: `https://www.google.com/maps?q=${scan.latitude},${scan.longitude}`,
   };
 }
@@ -78,21 +90,33 @@ export default async function ScansPage() {
                     <div className="text-sm font-medium text-slate-700">{scan.company || "-"}</div>
                     <div className="text-sm text-slate-600">
                       {location ? (
-                        <a
-                          href={location.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="font-semibold text-emerald-700 underline"
-                        >
-                          {location.label}
-                          {location.accuracy ? (
-                            <span className="block text-xs font-medium text-slate-500">
-                              {location.accuracy}
-                            </span>
-                          ) : null}
-                        </a>
+                        location.url ? (
+                          <a
+                            href={location.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="font-semibold text-emerald-700 underline"
+                          >
+                            {location.place ? (
+                              <span className="block text-slate-700">{location.place}</span>
+                            ) : null}
+                            {location.label}
+                            {location.accuracy ? (
+                              <span className="block text-xs font-medium text-slate-500">
+                                {location.accuracy}
+                              </span>
+                            ) : null}
+                          </a>
+                        ) : (
+                          <span>
+                            <span className="font-semibold text-slate-700">{location.label}</span>
+                            {location.accuracy ? (
+                              <span className="block text-xs text-slate-500">{location.accuracy}</span>
+                            ) : null}
+                          </span>
+                        )
                       ) : (
-                        <span className="text-slate-400">Non partagée</span>
+                        <span className="text-slate-400">Non disponible</span>
                       )}
                     </div>
                     <div className="text-sm text-slate-500">

@@ -1,0 +1,2 @@
+ALTER TABLE "ScanLog" ADD COLUMN IF NOT EXISTS "locationLabel" TEXT;
+ALTER TABLE "ScanLog" ADD COLUMN IF NOT EXISTS "locationSource" TEXT;
