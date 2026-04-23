@@ -23,7 +23,7 @@ function formatLocation(scan: {
     if (scan.locationLabel) {
       return {
         label: scan.locationLabel,
-        accuracy: scan.locationSource === "ip" ? "Approximation réseau" : null,
+        accuracy: scan.locationSource === "gps" ? "GPS téléphone" : "Approximation réseau",
         url: null,
         place: null,
       };
@@ -35,7 +35,12 @@ function formatLocation(scan: {
   return {
     place: scan.locationLabel || null,
     label: `${scan.latitude.toFixed(5)}, ${scan.longitude.toFixed(5)}`,
-    accuracy: scan.accuracy ? `± ${Math.round(scan.accuracy)} m` : "Approximation réseau",
+    accuracy:
+      scan.locationSource === "gps"
+        ? scan.accuracy
+          ? `GPS téléphone ± ${Math.round(scan.accuracy)} m`
+          : "GPS téléphone"
+        : "Approximation réseau",
     url: `https://www.google.com/maps?q=${scan.latitude},${scan.longitude}`,
   };
 }

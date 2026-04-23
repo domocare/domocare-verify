@@ -57,8 +57,18 @@ function formatScanLocation(scan: {
   latitude?: number | null;
   longitude?: number | null;
   accuracy?: number | null;
+  locationLabel?: string | null;
+  locationSource?: string | null;
 }) {
   if (scan.latitude === null || scan.latitude === undefined || scan.longitude === null || scan.longitude === undefined) {
+    if (scan.locationLabel) {
+      return {
+        label: scan.locationLabel,
+        accuracy: scan.locationSource === "gps" ? "GPS téléphone" : "Approximation réseau",
+        url: null,
+      };
+    }
+
     return null;
   }
 
@@ -410,7 +420,7 @@ export default async function EmployeeDetailPage({ params, searchParams }: Props
                             </span>
                           </div>
                           <div className="mt-2 text-xs text-slate-500">
-                            {location ? (
+                            {location?.url ? (
                               <a
                                 href={location.url}
                                 target="_blank"
@@ -420,6 +430,11 @@ export default async function EmployeeDetailPage({ params, searchParams }: Props
                                 {location.label}
                                 {location.accuracy ? ` (${location.accuracy})` : ""}
                               </a>
+                            ) : location ? (
+                              <span className="font-semibold text-slate-700">
+                                {location.label}
+                                {location.accuracy ? ` (${location.accuracy})` : ""}
+                              </span>
                             ) : (
                               "Géolocalisation non partagée"
                             )}

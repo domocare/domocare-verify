@@ -1,6 +1,7 @@
 import { connection } from "next/server";
 import { headers } from "next/headers";
 import CompanyLogo from "@/components/company-logo";
+import ScanLocationReporter from "@/components/scan-location-reporter";
 import { getCompanyBrand } from "@/lib/company-branding";
 import { prisma } from "@/lib/prisma";
 
@@ -60,12 +61,14 @@ function VerifyCard({
   message,
   company,
   companyLogoUrl,
+  scanId,
   children,
 }: {
   state: VerifyState;
   message?: string;
   company?: string | null;
   companyLogoUrl?: string | null;
+  scanId?: string | null;
   children?: React.ReactNode;
 }) {
   const meta = getStateMeta(state);
@@ -107,6 +110,7 @@ function VerifyCard({
             {children}
           </div>
         ) : null}
+        {scanId ? <ScanLocationReporter scanId={scanId} /> : null}
       </div>
     </main>
   );
@@ -213,12 +217,13 @@ export default async function VerifyPage({
   }
 
   if (!employee || !employee.qrToken) {
-    await logScan({ token, result: "invalid" });
+    const scan = await logScan({ token, result: "invalid" });
 
     return (
       <VerifyCard
         state="invalid"
         message="QR code invalide ou introuvable"
+        scanId={scan.id}
       />
     );
   }
@@ -242,7 +247,7 @@ export default async function VerifyPage({
 
   if (isRevoked || isExpired) {
     const result = isRevoked ? "suspended" : "expired";
-    await logScan({ token, result, company: employee.company });
+    const scan = await logScan({ token, result, company: employee.company });
     const companyRecord = employee.company
       ? await prisma.company.findUnique({ where: { name: employee.company } })
       : null;
@@ -252,13 +257,14 @@ export default async function VerifyPage({
         state={isRevoked ? "suspended" : "expired"}
         company={employee.company}
         companyLogoUrl={companyRecord?.logoUrl}
+        scanId={scan.id}
       >
         <PublicEmployeeSummary token={token} employee={employee} state={isRevoked ? "suspended" : "expired"} />
       </VerifyCard>
     );
   }
 
-  await logScan({ token, result: "valid", company: employee.company });
+  const scan = await logScan({ token, result: "valid", company: employee.company });
   const companyRecord = employee.company
     ? await prisma.company.findUnique({ where: { name: employee.company } })
     : null;
@@ -268,6 +274,7 @@ export default async function VerifyPage({
       state="valid"
       company={employee.company}
       companyLogoUrl={companyRecord?.logoUrl}
+      scanId={scan.id}
     >
       <PublicEmployeeSummary token={token} employee={employee} state="valid" />
     </VerifyCard>
