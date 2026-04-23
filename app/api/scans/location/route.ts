@@ -12,6 +12,14 @@ export async function POST(req: Request) {
     return Response.json({ ok: false }, { status: 400 });
   }
 
+  if (body.denied === true) {
+    await prisma.scanLog.deleteMany({
+      where: { id: body.scanId },
+    });
+
+    return Response.json({ ok: false, reason: "location_required" }, { status: 403 });
+  }
+
   const latitude = readNumber(body.latitude);
   const longitude = readNumber(body.longitude);
   const accuracy = readNumber(body.accuracy);
