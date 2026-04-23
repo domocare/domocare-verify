@@ -110,6 +110,10 @@ model ScanLog {
   token     String
   result    String
   company   String?
+  latitude  Float?
+  longitude Float?
+  accuracy  Float?
+  locationCapturedAt DateTime?
   ipAddress String?
   userAgent String?
   createdAt DateTime @default(now())

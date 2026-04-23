@@ -53,6 +53,22 @@ function splitAgencyNames(value?: string | null) {
     .filter(Boolean);
 }
 
+function formatScanLocation(scan: {
+  latitude?: number | null;
+  longitude?: number | null;
+  accuracy?: number | null;
+}) {
+  if (scan.latitude === null || scan.latitude === undefined || scan.longitude === null || scan.longitude === undefined) {
+    return null;
+  }
+
+  return {
+    label: `${scan.latitude.toFixed(5)}, ${scan.longitude.toFixed(5)}`,
+    accuracy: scan.accuracy ? `± ${Math.round(scan.accuracy)} m` : null,
+    url: `https://www.google.com/maps?q=${scan.latitude},${scan.longitude}`,
+  };
+}
+
 function getStatusLabel(status?: string | null) {
   if (status === "active") return "Autorisé";
   if (status === "expired") return "Expire";
@@ -113,6 +129,14 @@ export default async function EmployeeDetailPage({ params, searchParams }: Props
   if (!employee) {
     notFound();
   }
+
+  const tokenScans = employee.qrToken?.token
+    ? await prisma.scanLog.findMany({
+        where: { token: employee.qrToken.token },
+        orderBy: { createdAt: "desc" },
+        take: 8,
+      })
+    : [];
 
   const status = employee.authorization?.status || "unknown";
   const verifyUrl = employee.qrToken?.token ? getVerifyUrl(employee.qrToken.token) : null;
@@ -368,6 +392,44 @@ export default async function EmployeeDetailPage({ params, searchParams }: Props
                 qrImage={qrImage}
                 verifyUrl={verifyUrl}
               />
+              <div className="rounded-lg border bg-slate-50 p-4">
+                <p className="text-sm font-semibold text-slate-900">Derniers scans du token</p>
+                <div className="mt-3 space-y-3">
+                  {tokenScans.length === 0 ? (
+                    <p className="text-sm text-slate-500">Aucun scan enregistré.</p>
+                  ) : (
+                    tokenScans.map((scan) => {
+                      const location = formatScanLocation(scan);
+
+                      return (
+                        <div key={scan.id} className="rounded-lg bg-white p-3 text-sm">
+                          <div className="flex items-center justify-between gap-3">
+                            <span className="font-semibold text-slate-900">{scan.result}</span>
+                            <span className="text-xs text-slate-500">
+                              {new Date(scan.createdAt).toLocaleString("fr-FR")}
+                            </span>
+                          </div>
+                          <div className="mt-2 text-xs text-slate-500">
+                            {location ? (
+                              <a
+                                href={location.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="font-semibold text-emerald-700 underline"
+                              >
+                                {location.label}
+                                {location.accuracy ? ` (${location.accuracy})` : ""}
+                              </a>
+                            ) : (
+                              "Géolocalisation non partagée"
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
             </div>
           ) : (
             <p className="mt-5 text-sm text-slate-500">Aucun QR code disponible.</p>
