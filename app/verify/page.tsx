@@ -6,7 +6,14 @@ import ScanLocationReporter from "@/components/scan-location-reporter";
 import { getCompanyBrand } from "@/lib/company-branding";
 import { prisma } from "@/lib/prisma";
 
-type VerifyState = "valid" | "missing" | "invalid" | "expired" | "suspended" | "unavailable";
+type VerifyState =
+  | "valid"
+  | "pending"
+  | "missing"
+  | "invalid"
+  | "expired"
+  | "suspended"
+  | "unavailable";
 
 function formatDate(date?: Date | null) {
   if (!date) return "-";
@@ -19,6 +26,17 @@ function formatDate(date?: Date | null) {
 }
 
 function getStateMeta(state: VerifyState) {
+  if (state === "pending") {
+    return {
+      label: "Code client requis",
+      title: "Validation d'accès en attente",
+      message: "Saisissez d'abord le code du client final pour confirmer ou refuser l'entrée.",
+      tone: "border-sky-200 bg-sky-50 text-sky-900",
+      pill: "bg-sky-600 text-white",
+      marker: "bg-sky-500",
+    };
+  }
+
   if (state === "valid") {
     return {
       label: "Habilitation valide",
@@ -50,7 +68,7 @@ function getStateMeta(state: VerifyState) {
     message:
       state === "suspended"
         ? "Cette habilitation a été suspendue. Ne laissez pas l'intervention démarrer."
-        : "Ce QR code est absent du referentiel Domocare Verify.",
+        : "Ce QR code est absent du référentiel Domocare Verify.",
     tone: "border-red-200 bg-red-50 text-red-800",
     pill: "bg-red-600 text-white",
     marker: "bg-red-500",
@@ -107,9 +125,7 @@ function VerifyCard({
         </section>
 
         {children ? (
-          <div className="overflow-hidden rounded-lg border bg-white shadow-sm">
-            {children}
-          </div>
+          <div className="overflow-hidden rounded-lg border bg-white shadow-sm">{children}</div>
         ) : null}
         {scanId ? <ScanLocationReporter scanId={scanId} /> : null}
       </div>
@@ -217,7 +233,7 @@ export default async function VerifyPage({
   const { token } = await searchParams;
 
   if (!token) {
-    return <VerifyCard state="missing" message="Le QR code scanne ne contient pas de token valide." />;
+    return <VerifyCard state="missing" message="Le QR code scanné ne contient pas de token valide." />;
   }
 
   let employee: Awaited<ReturnType<typeof getEmployeeByToken>> | null = null;
@@ -238,18 +254,11 @@ export default async function VerifyPage({
   if (!employee || !employee.qrToken) {
     const scan = await logScan({ token, result: "invalid" });
 
-    return (
-      <VerifyCard
-        state="invalid"
-        message="QR code invalide ou introuvable"
-        scanId={scan.id}
-      />
-    );
+    return <VerifyCard state="invalid" message="QR code invalide ou introuvable" scanId={scan.id} />;
   }
 
   const isExpiredByDate =
-    !!employee.qrToken.expiresAt &&
-    new Date(employee.qrToken.expiresAt) < new Date();
+    !!employee.qrToken.expiresAt && new Date(employee.qrToken.expiresAt) < new Date();
 
   const isAuthorizationRevoked =
     employee.authorization?.status === "revoked" ||
@@ -287,7 +296,11 @@ export default async function VerifyPage({
         companyLogoUrl={companyRecord?.logoUrl}
         scanId={scan.id}
       >
-        <PublicEmployeeSummary token={token} employee={employee} state={isRevoked ? "suspended" : "expired"} />
+        <PublicEmployeeSummary
+          token={token}
+          employee={employee}
+          state={isRevoked ? "suspended" : "expired"}
+        />
       </VerifyCard>
     );
   }
@@ -295,17 +308,23 @@ export default async function VerifyPage({
   const companyRecord = employee.company
     ? await prisma.company.findUnique({ where: { name: employee.company } })
     : null;
-  const requiresAccessCode = Boolean(employee.customer?.accessCodeEnabled || employee.customerSite?.codeRequired);
+  const requiresAccessCode = Boolean(
+    employee.customer?.accessCodeEnabled || employee.customerSite?.codeRequired,
+  );
 
   if (requiresAccessCode) {
     return (
       <VerifyCard
-        state="valid"
-        message="QR code reconnu. La validation d'entrée nécessite le code d'accès du client final."
+        state="pending"
+        message="Le QR code a été reconnu. Saisissez maintenant le code du client final pour valider ou refuser l'entrée."
         company={employee.company}
         companyLogoUrl={companyRecord?.logoUrl}
       >
-        <PublicEmployeeSummary token={token} employee={employee} state="valid" requiresAccessCode />
+        <AccessCodeVerification
+          token={token}
+          customerName={employee.customer?.name}
+          siteName={employee.customerSite?.name}
+        />
       </VerifyCard>
     );
   }
@@ -384,7 +403,7 @@ function PublicEmployeeSummary({
         </div>
 
         <div className="mt-6 grid gap-3 sm:grid-cols-2">
-          <PublicInfo label="Validite" value={validUntil ? `Jusqu'au ${formatDate(validUntil)}` : "-"} />
+          <PublicInfo label="Validité" value={validUntil ? `Jusqu'au ${formatDate(validUntil)}` : "-"} />
           <PublicInfo label="Type d'intervention" value={employee.interventionType} />
           <PublicInfo label="Véhicule" value={employee.vehiclePlate} />
           <PublicInfo label="Site ou client autorisé" value={authorizedSite} />
