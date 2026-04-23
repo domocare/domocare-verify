@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth-middleware";
+import { sendCustomerPortalInviteEmail } from "@/lib/customer-portal-invite";
 
 function readText(value: unknown) {
   return typeof value === "string" && value.trim() ? value.trim() : null;
@@ -23,6 +24,34 @@ async function ensureWriteAccess(req: Request) {
     "AGENCY_ADMIN",
     "ADMIN_ASSISTANT",
   ]);
+}
+
+async function maybeSendPortalInvite({
+  previousEmail,
+  nextEmail,
+  previousPortalEnabled,
+  nextPortalEnabled,
+  customerName,
+}: {
+  previousEmail?: string | null;
+  nextEmail?: string | null;
+  previousPortalEnabled?: boolean;
+  nextPortalEnabled: boolean;
+  customerName: string;
+}) {
+  if (!nextPortalEnabled || !nextEmail) return;
+
+  const normalizedPreviousEmail = previousEmail?.trim().toLowerCase() || null;
+  const normalizedNextEmail = nextEmail.trim().toLowerCase();
+  const portalWasActivated = previousPortalEnabled !== true && nextPortalEnabled === true;
+  const emailChanged = normalizedPreviousEmail !== normalizedNextEmail;
+
+  if (!portalWasActivated && !emailChanged) return;
+
+  await sendCustomerPortalInviteEmail({
+    customerName,
+    email: normalizedNextEmail,
+  });
 }
 
 export async function GET(req: Request) {
@@ -99,6 +128,12 @@ export async function POST(req: Request) {
     },
   });
 
+  await maybeSendPortalInvite({
+    nextEmail: customer.email,
+    nextPortalEnabled: customer.clientPortalEnabled,
+    customerName: customer.name,
+  });
+
   return Response.json({ ok: true, customer });
 }
 
@@ -120,6 +155,14 @@ export async function PATCH(req: Request) {
     return Response.json({ ok: false, message: "Ce client existe déjà." }, { status: 409 });
   }
 
+  const previousCustomer = await prisma.customer.findUnique({
+    where: { id },
+    select: {
+      email: true,
+      clientPortalEnabled: true,
+    },
+  });
+
   const customer = await prisma.customer.update({
     where: { id },
     data: {
@@ -139,6 +182,14 @@ export async function PATCH(req: Request) {
       portalCanViewScans: body.portalCanViewScans !== false,
       portalCanManageUsers: body.portalCanManageUsers !== false,
     },
+  });
+
+  await maybeSendPortalInvite({
+    previousEmail: previousCustomer?.email,
+    nextEmail: customer.email,
+    previousPortalEnabled: previousCustomer?.clientPortalEnabled,
+    nextPortalEnabled: customer.clientPortalEnabled,
+    customerName: customer.name,
   });
 
   return Response.json({ ok: true, customer });
