@@ -301,7 +301,7 @@ export default async function VerifyPage({
     return (
       <VerifyCard
         state="valid"
-        message="QR code reconnu. La validation d'entrée nécessite le code d'accès du client."
+        message="QR code reconnu. La validation d'entrée nécessite le code d'accès du client final."
         company={employee.company}
         companyLogoUrl={companyRecord?.logoUrl}
       >
@@ -423,7 +423,7 @@ function PublicEmployeeSummary({
       <div className="border-t bg-slate-50 p-4 text-sm leading-6 text-slate-600">
         {state === "valid"
           ? requiresAccessCode
-            ? "Ne laissez entrer le collaborateur que si le code client valide l'accès après ce contrôle QR."
+            ? "Ne laissez entrer le collaborateur que si le code du client final valide l'accès après ce contrôle QR."
             : "Si la photo, le véhicule ou le motif d'intervention ne correspondent pas, signalez l'anomalie avant de laisser intervenir."
           : "Par sécurité, contactez l'agence ou signalez l'anomalie avant toute intervention."}
       </div>

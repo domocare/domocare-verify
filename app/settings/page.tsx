@@ -5,7 +5,7 @@ export default function SettingsPage() {
   return (
     <BackofficeShell
       title="Paramétrage"
-      subtitle="Référentiels utilisés dans les fiches collaborateurs."
+      subtitle="Sociétés clientes Lantana Verify, agences et sites rattachés."
     >
       <SettingsClient />
     </BackofficeShell>

@@ -48,7 +48,7 @@ export default function AccessCodeVerification({ token, customerName, siteName }
       <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-950">
         <p className="text-sm font-black uppercase tracking-[0.14em]">Double authentification</p>
         <p className="mt-2 text-sm leading-6">
-          Le client doit saisir son code d&apos;accès pour confirmer l&apos;entrée sur
+          Le client final doit saisir son code d&apos;accès pour confirmer l&apos;entrée sur
           {siteName ? ` le site ${siteName}` : customerName ? ` ${customerName}` : " ce site"}.
         </p>
       </div>

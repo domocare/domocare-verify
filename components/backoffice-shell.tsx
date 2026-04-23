@@ -45,7 +45,7 @@ const navSections = [
       { href: "/employees", label: "Collaborateurs", icon: Users },
       { href: "/employees/new", label: "Ajouter", icon: Plus },
       { href: "/intervention-types", label: "Interventions", icon: ClipboardList },
-      { href: "/customers", label: "Clients / sites", icon: BriefcaseBusiness },
+      { href: "/customers", label: "Clients finaux", icon: BriefcaseBusiness },
       { href: "/users", label: "Utilisateurs", icon: UserRound },
     ],
   },

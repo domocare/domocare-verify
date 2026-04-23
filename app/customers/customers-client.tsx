@@ -204,15 +204,15 @@ export default function CustomersClient() {
     <div className="grid gap-5 xl:grid-cols-[440px_1fr]">
       <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
         <h2 className="text-xl font-bold text-slate-950">
-          {customerForm.id ? "Modifier le client" : "Nouveau client"}
+          {customerForm.id ? "Modifier le client final" : "Nouveau client final"}
         </h2>
         <form onSubmit={saveCustomer} className="mt-4 grid gap-3">
-          <input className="rounded-lg border px-4 py-3" placeholder="Nom de l'entreprise" value={customerForm.name} onChange={(event) => setCustomerForm({ ...customerForm, name: event.target.value })} required />
+          <input className="rounded-lg border px-4 py-3" placeholder="Nom du client final" value={customerForm.name} onChange={(event) => setCustomerForm({ ...customerForm, name: event.target.value })} required />
           <div className="grid gap-3 sm:grid-cols-2">
             <input className="rounded-lg border px-4 py-3" placeholder="SIRET" value={customerForm.siret} onChange={(event) => setCustomerForm({ ...customerForm, siret: event.target.value })} />
             <input className="rounded-lg border px-4 py-3" placeholder="Activité" value={customerForm.activity} onChange={(event) => setCustomerForm({ ...customerForm, activity: event.target.value })} />
           </div>
-          <input className="rounded-lg border px-4 py-3" placeholder="Adresse de l'entreprise" value={customerForm.address} onChange={(event) => setCustomerForm({ ...customerForm, address: event.target.value })} />
+          <input className="rounded-lg border px-4 py-3" placeholder="Adresse du client final" value={customerForm.address} onChange={(event) => setCustomerForm({ ...customerForm, address: event.target.value })} />
           <div className="grid gap-3 sm:grid-cols-2">
             <input className="rounded-lg border px-4 py-3" placeholder="Code postal" value={customerForm.postalCode} onChange={(event) => setCustomerForm({ ...customerForm, postalCode: event.target.value })} />
             <input className="rounded-lg border px-4 py-3" placeholder="Ville" value={customerForm.city} onChange={(event) => setCustomerForm({ ...customerForm, city: event.target.value })} />
@@ -222,11 +222,11 @@ export default function CustomersClient() {
             <p className="mb-3 text-sm font-bold text-slate-950">Gestion de code d&apos;accès</p>
             <label className="flex items-center gap-2 text-sm font-semibold">
               <input type="checkbox" checked={customerForm.accessCodeEnabled} onChange={(event) => setCustomerForm({ ...customerForm, accessCodeEnabled: event.target.checked })} />
-              Demander un code client à chaque scan
+              Demander un code client final à chaque scan
             </label>
             <label className="mt-3 flex items-center gap-2 text-sm font-semibold">
               <input type="checkbox" checked={customerForm.clientPortalEnabled} onChange={(event) => setCustomerForm({ ...customerForm, clientPortalEnabled: event.target.checked })} />
-              Activer le futur back-office client
+              Activer le futur back-office client final
             </label>
             <div className="mt-3 grid gap-2 text-sm">
               <label className="flex items-center gap-2"><input type="checkbox" checked={customerForm.portalCanViewCodes} onChange={(event) => setCustomerForm({ ...customerForm, portalCanViewCodes: event.target.checked })} /> Codes</label>
@@ -236,14 +236,14 @@ export default function CustomersClient() {
           </div>
 
           <button className="rounded-lg bg-slate-950 px-4 py-3 text-sm font-bold text-white">
-            Enregistrer le client
+            Enregistrer le client final
           </button>
         </form>
       </section>
 
       <section className="space-y-5">
         <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="text-xl font-bold text-slate-950">Clients enregistrés</h2>
+          <h2 className="text-xl font-bold text-slate-950">Clients finaux enregistrés</h2>
           <div className="mt-4 grid gap-3">
             {customers.map((customer) => (
               <button
@@ -284,10 +284,10 @@ export default function CustomersClient() {
         </div>
 
         <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="text-xl font-bold text-slate-950">Sites d&apos;intervention</h2>
+          <h2 className="text-xl font-bold text-slate-950">Sites d&apos;intervention du client final</h2>
           <form onSubmit={saveSite} className="mt-4 grid gap-3">
             <select className="rounded-lg border px-4 py-3" value={siteForm.customerId || selectedCustomer?.id || ""} onChange={(event) => setSiteForm({ ...siteForm, customerId: event.target.value })} required>
-              <option value="">Choisir un client</option>
+              <option value="">Choisir un client final</option>
               {customers.map((customer) => (
                 <option key={customer.id} value={customer.id}>{customer.name}</option>
               ))}
@@ -339,7 +339,7 @@ export default function CustomersClient() {
         <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
           <h2 className="text-xl font-bold text-slate-950">Gestion des codes</h2>
           <p className="mt-1 text-sm text-slate-500">
-            Code de 6 à 8 chiffres saisi par l&apos;accueil ou la sécurité après le scan QR.
+            Code de 6 à 8 chiffres saisi par l&apos;accueil ou la sécurité du client final après le scan QR.
           </p>
           <form onSubmit={saveCode} className="mt-4 grid gap-3">
             <select
@@ -348,7 +348,7 @@ export default function CustomersClient() {
               onChange={(event) => setCodeForm({ ...codeForm, customerId: event.target.value, siteId: "" })}
               required
             >
-              <option value="">Choisir un client</option>
+              <option value="">Choisir un client final</option>
               {customers.map((customer) => (
                 <option key={customer.id} value={customer.id}>{customer.name}</option>
               ))}
@@ -358,7 +358,7 @@ export default function CustomersClient() {
               value={codeForm.siteId}
               onChange={(event) => setCodeForm({ ...codeForm, siteId: event.target.value })}
             >
-              <option value="">Code valable pour tous les sites du client</option>
+              <option value="">Code valable pour tous les sites du client final</option>
               {(customers.find((customer) => customer.id === (codeForm.customerId || selectedCustomer?.id))?.sites || []).map((site) => (
                 <option key={site.id} value={site.id}>{site.name}</option>
               ))}
@@ -405,7 +405,7 @@ export default function CustomersClient() {
           {selectedCustomer ? (
             <div className="mt-5 grid gap-2">
               {selectedCustomer.accessCodes.length === 0 ? (
-                <p className="text-sm text-slate-500">Aucun code enregistré pour ce client.</p>
+                <p className="text-sm text-slate-500">Aucun code enregistré pour ce client final.</p>
               ) : (
                 selectedCustomer.accessCodes.map((code) => {
                   const site = selectedCustomer.sites.find((item) => item.id === code.siteId);

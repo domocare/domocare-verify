@@ -4,8 +4,8 @@ import CustomersClient from "./customers-client";
 export default function CustomersPage() {
   return (
     <BackofficeShell
-      title="Clients et sites"
-      subtitle="Référentiel clients, sites d'intervention et options d'accès sécurisé."
+      title="Clients finaux"
+      subtitle="Clients et sites d'intervention des sociétés clientes de Lantana Verify."
     >
       <CustomersClient />
     </BackofficeShell>

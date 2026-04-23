@@ -358,7 +358,7 @@ export default function NewEmployeePage() {
                 });
               }}
             >
-              <option value="">Client ou site autorisé</option>
+              <option value="">Client final autorisé</option>
               {customers.map((customer) => (
                 <option key={customer.id} value={customer.id}>
                   {customer.name}
@@ -380,7 +380,7 @@ export default function NewEmployeePage() {
                 });
               }}
             >
-              <option value="">Tous les sites du client</option>
+              <option value="">Tous les sites du client final</option>
               {availableSites.map((site) => (
                 <option key={site.id} value={site.id}>
                   {site.name}
@@ -389,6 +389,10 @@ export default function NewEmployeePage() {
               ))}
             </select>
           ) : null}
+          <p className="text-xs leading-5 text-slate-500">
+            Les sociétés et agences/sites de rattachement restent dans Paramétrage. Ce champ concerne
+            uniquement les clients finaux et sites d&apos;intervention de ces sociétés.
+          </p>
 
           <div className="grid gap-4 md:grid-cols-2">
             <select
