@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ReactNode } from "react";
+import { ComponentType, ReactNode } from "react";
 import {
   BarChart3,
   Bell,
@@ -29,7 +29,18 @@ type Props = {
   children: ReactNode;
 };
 
-const navSections = [
+type NavItem = {
+  href: string;
+  label: string;
+  icon: ComponentType<{ className?: string }>;
+};
+
+type NavSection = {
+  label: string;
+  items: NavItem[];
+};
+
+const navSections: NavSection[] = [
   {
     label: "Pilotage",
     items: [
@@ -42,19 +53,19 @@ const navSections = [
   {
     label: "Gestion",
     items: [
+      { href: "/settings", label: "Agences/Sites", icon: Settings },
       { href: "/employees", label: "Collaborateurs", icon: Users },
+      { href: "/customers", label: "Clients finaux", icon: BriefcaseBusiness },
       { href: "/employees/new", label: "Ajouter", icon: Plus },
       { href: "/intervention-types", label: "Interventions", icon: ClipboardList },
-      { href: "/customers", label: "Clients finaux", icon: BriefcaseBusiness },
-      { href: "/users", label: "Utilisateurs", icon: UserRound },
     ],
   },
   {
     label: "Administration",
     items: [
+      { href: "/users", label: "Utilisateurs", icon: UserRound },
       { href: "/security", label: "Sécurité", icon: ShieldCheck },
       { href: "/permissions", label: "Droits", icon: KeyRound },
-      { href: "/settings", label: "Paramétrage", icon: Settings },
     ],
   },
 ];
