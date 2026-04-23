@@ -15,6 +15,14 @@ type CustomerSite = {
   isActive: boolean;
 };
 
+type PortalUser = {
+  id: string;
+  name: string;
+  email: string;
+  isOwner: boolean;
+  isActive: boolean;
+};
+
 type Customer = {
   id: string;
   name: string;
@@ -31,6 +39,8 @@ type Customer = {
   portalCanViewCodes: boolean;
   portalCanViewSites: boolean;
   portalCanViewScans: boolean;
+  portalCanManageUsers: boolean;
+  portalUsers: PortalUser[];
   sites: CustomerSite[];
 };
 
@@ -50,6 +60,7 @@ const emptyCustomerForm = {
   portalCanViewCodes: true,
   portalCanViewSites: true,
   portalCanViewScans: true,
+  portalCanManageUsers: true,
 };
 
 const emptySiteForm = {
@@ -87,11 +98,11 @@ export default function CustomersClient() {
   }
 
   useEffect(() => {
-    let isMounted = true;
+    let mounted = true;
 
     async function loadInitialCustomers() {
       const res = await fetch("/api/customers", { cache: "no-store" });
-      if (!isMounted) return;
+      if (!mounted) return;
 
       if (!res.ok) {
         setMessage("Impossible de charger les clients finaux.");
@@ -99,13 +110,13 @@ export default function CustomersClient() {
       }
 
       const data = (await res.json()) as { customers: Customer[] };
-      if (isMounted) setCustomers(data.customers);
+      if (mounted) setCustomers(data.customers);
     }
 
     void loadInitialCustomers();
 
     return () => {
-      isMounted = false;
+      mounted = false;
     };
   }, []);
 
@@ -175,11 +186,12 @@ export default function CustomersClient() {
   }
 
   return (
-    <div className="grid gap-5 xl:grid-cols-[460px_1fr]">
+    <div className="grid gap-5 xl:grid-cols-[480px_1fr]">
       <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
         <h2 className="text-xl font-bold text-slate-950">
           {customerForm.id ? "Modifier le client final" : "Nouveau client final"}
         </h2>
+
         <form onSubmit={saveCustomer} className="mt-4 grid gap-3">
           <input
             className="rounded-lg border px-4 py-3"
@@ -188,14 +200,16 @@ export default function CustomersClient() {
             onChange={(event) => setCustomerForm({ ...customerForm, name: event.target.value })}
             required
           />
+
           <input
             type="email"
             className="rounded-lg border px-4 py-3"
-            placeholder="Email de connexion du client final"
+            placeholder="Email du premier administrateur client final"
             value={customerForm.email}
             onChange={(event) => setCustomerForm({ ...customerForm, email: event.target.value })}
           />
-          <div className="grid gap-3 sm:grid-cols-[120px_1fr]">
+
+          <div className="grid gap-3 sm:grid-cols-[132px_1fr]">
             <div className="flex h-24 items-center justify-center rounded-lg border bg-slate-50 p-2">
               {customerForm.logoUrl ? (
                 <img src={customerForm.logoUrl} alt="Logo client final" className="max-h-16 w-auto object-contain" />
@@ -203,6 +217,7 @@ export default function CustomersClient() {
                 <span className="text-xs text-slate-400">Logo</span>
               )}
             </div>
+
             <div className="space-y-2">
               <input
                 type="file"
@@ -218,6 +233,7 @@ export default function CustomersClient() {
               />
             </div>
           </div>
+
           <div className="grid gap-3 sm:grid-cols-2">
             <input
               className="rounded-lg border px-4 py-3"
@@ -232,12 +248,14 @@ export default function CustomersClient() {
               onChange={(event) => setCustomerForm({ ...customerForm, activity: event.target.value })}
             />
           </div>
+
           <input
             className="rounded-lg border px-4 py-3"
             placeholder="Adresse du client final"
             value={customerForm.address}
             onChange={(event) => setCustomerForm({ ...customerForm, address: event.target.value })}
           />
+
           <div className="grid gap-3 sm:grid-cols-2">
             <input
               className="rounded-lg border px-4 py-3"
@@ -255,6 +273,7 @@ export default function CustomersClient() {
 
           <div className="rounded-lg border border-slate-200 p-4">
             <p className="mb-3 text-sm font-bold text-slate-950">Options du portail client final</p>
+
             <label className="flex items-center gap-2 text-sm font-semibold">
               <input
                 type="checkbox"
@@ -265,6 +284,7 @@ export default function CustomersClient() {
               />
               Demander un code client final à chaque scan
             </label>
+
             <label className="mt-3 flex items-center gap-2 text-sm font-semibold">
               <input
                 type="checkbox"
@@ -275,6 +295,7 @@ export default function CustomersClient() {
               />
               Activer l&apos;espace client final
             </label>
+
             <div className="mt-3 grid gap-2 text-sm">
               <label className="flex items-center gap-2">
                 <input
@@ -286,6 +307,7 @@ export default function CustomersClient() {
                 />
                 Gestion des codes
               </label>
+
               <label className="flex items-center gap-2">
                 <input
                   type="checkbox"
@@ -296,6 +318,7 @@ export default function CustomersClient() {
                 />
                 Sites
               </label>
+
               <label className="flex items-center gap-2">
                 <input
                   type="checkbox"
@@ -305,6 +328,17 @@ export default function CustomersClient() {
                   }
                 />
                 Scans
+              </label>
+
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={customerForm.portalCanManageUsers}
+                  onChange={(event) =>
+                    setCustomerForm({ ...customerForm, portalCanManageUsers: event.target.checked })
+                  }
+                />
+                Utilisateurs du portail
               </label>
             </div>
           </div>
@@ -318,6 +352,7 @@ export default function CustomersClient() {
       <section className="space-y-5">
         <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
           <h2 className="text-xl font-bold text-slate-950">Clients finaux enregistrés</h2>
+
           <div className="mt-4 grid gap-3">
             {customers.map((customer) => (
               <button
@@ -340,6 +375,7 @@ export default function CustomersClient() {
                     portalCanViewCodes: customer.portalCanViewCodes,
                     portalCanViewSites: customer.portalCanViewSites,
                     portalCanViewScans: customer.portalCanViewScans,
+                    portalCanManageUsers: customer.portalCanManageUsers,
                   });
                   setSiteForm({ ...emptySiteForm, customerId: customer.id });
                 }}
@@ -363,9 +399,25 @@ export default function CustomersClient() {
                     </span>
                   </div>
                 </div>
+
                 <p className="mt-1 text-sm text-slate-500">
-                  {customer.email || "Email non renseigné"} - {customer.sites.length} site(s)
+                  {customer.email || "Email non renseigné"} - {customer.sites.length} site(s) -{" "}
+                  {customer.portalUsers.length} utilisateur(s)
                 </p>
+
+                {customer.portalUsers.length > 0 ? (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {customer.portalUsers.slice(0, 3).map((portalUser) => (
+                      <span
+                        key={portalUser.id}
+                        className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600"
+                      >
+                        {portalUser.name}
+                        {portalUser.isOwner ? " (admin)" : ""}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
               </button>
             ))}
           </div>
@@ -373,6 +425,7 @@ export default function CustomersClient() {
 
         <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
           <h2 className="text-xl font-bold text-slate-950">Sites d&apos;intervention du client final</h2>
+
           <form onSubmit={saveSite} className="mt-4 grid gap-3">
             <select
               className="rounded-lg border px-4 py-3"
@@ -387,6 +440,7 @@ export default function CustomersClient() {
                 </option>
               ))}
             </select>
+
             <input
               className="rounded-lg border px-4 py-3"
               placeholder="Nom du site"
@@ -394,12 +448,14 @@ export default function CustomersClient() {
               onChange={(event) => setSiteForm({ ...siteForm, name: event.target.value })}
               required
             />
+
             <input
               className="rounded-lg border px-4 py-3"
               placeholder="Adresse du site"
               value={siteForm.address}
               onChange={(event) => setSiteForm({ ...siteForm, address: event.target.value })}
             />
+
             <div className="grid gap-3 sm:grid-cols-2">
               <input
                 className="rounded-lg border px-4 py-3"
@@ -414,6 +470,7 @@ export default function CustomersClient() {
                 onChange={(event) => setSiteForm({ ...siteForm, city: event.target.value })}
               />
             </div>
+
             <label className="flex items-center gap-2 rounded-lg border px-4 py-3 text-sm font-semibold">
               <input
                 type="checkbox"
@@ -422,6 +479,7 @@ export default function CustomersClient() {
               />
               Code d&apos;accès obligatoire sur ce site
             </label>
+
             <button className="rounded-lg bg-[#006b55] px-4 py-3 text-sm font-bold text-white">
               Enregistrer le site
             </button>
@@ -461,8 +519,9 @@ export default function CustomersClient() {
         </div>
 
         <div className="rounded-lg border border-slate-200 bg-slate-50 p-5 text-sm leading-6 text-slate-700 shadow-sm">
-          Les codes d&apos;accès ne sont plus créés ici. Ils seront gérés par le client final dans son
-          espace dédié, avec son email, son logo et ses couleurs.
+          Le back-office interne sert à créer le client final, ses sites, ses options et son premier email
+          d&apos;activation. Les codes et les utilisateurs complémentaires sont ensuite gérés dans le portail du
+          client final.
         </div>
       </section>
 

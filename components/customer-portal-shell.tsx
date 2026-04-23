@@ -6,17 +6,25 @@ import {
   KeyRound,
   LogOut,
   ShieldCheck,
+  Users,
 } from "lucide-react";
 
 type Props = {
   title: string;
   subtitle?: string;
   customer: {
+    id: string;
     name: string;
     logoUrl?: string | null;
     brandColor?: string | null;
+    portalCanManageUsers?: boolean;
+    portalUser?: {
+      name: string;
+      email: string;
+      isOwner: boolean;
+    } | null;
   };
-  active: "dashboard" | "codes" | "scans";
+  active: "dashboard" | "codes" | "scans" | "users";
   children: ReactNode;
 };
 
@@ -24,6 +32,7 @@ const items = [
   { href: "/client", key: "dashboard", label: "Vue d'ensemble", icon: Building2 },
   { href: "/client/codes", key: "codes", label: "Gestion des codes", icon: KeyRound },
   { href: "/client/scans", key: "scans", label: "Scans", icon: FileClock },
+  { href: "/client/users", key: "users", label: "Utilisateurs", icon: Users },
 ] as const;
 
 export default function CustomerPortalShell({
@@ -34,19 +43,27 @@ export default function CustomerPortalShell({
   children,
 }: Props) {
   const brandColor = customer.brandColor || "#0f766e";
+  const navigation = items.filter((item) => item.key !== "users" || customer.portalCanManageUsers);
 
   return (
     <main className="min-h-screen bg-[#f4f7fb] text-slate-900">
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-[292px] border-r border-slate-200 bg-white xl:block">
         <div className="flex h-full flex-col">
-          <div className="flex h-[76px] items-center border-b border-slate-100 px-6">
+          <div className="flex min-h-[88px] items-center border-b border-slate-100 px-6 py-4">
             <Link href="/client" className="flex items-center gap-3">
-              <span
-                className="flex h-12 w-12 items-center justify-center rounded-lg text-white shadow-sm"
-                style={{ backgroundColor: brandColor }}
-              >
-                <ShieldCheck className="h-6 w-6" />
-              </span>
+              {customer.logoUrl ? (
+                <span className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white p-2 shadow-sm">
+                  <img src={customer.logoUrl} alt={customer.name} className="max-h-8 w-auto object-contain" />
+                </span>
+              ) : (
+                <span
+                  className="flex h-12 w-12 items-center justify-center rounded-lg text-white shadow-sm"
+                  style={{ backgroundColor: brandColor }}
+                >
+                  <ShieldCheck className="h-6 w-6" />
+                </span>
+              )}
+
               <span className="min-w-0">
                 <span className="block truncate text-xl font-extrabold tracking-tight text-slate-950">
                   {customer.name}
@@ -60,7 +77,7 @@ export default function CustomerPortalShell({
 
           <div className="flex-1 overflow-y-auto px-4 py-5">
             <nav className="grid gap-1">
-              {items.map((item) => {
+              {navigation.map((item) => {
                 const Icon = item.icon;
                 const isActive = active === item.key;
 
@@ -88,6 +105,13 @@ export default function CustomerPortalShell({
           </div>
 
           <div className="border-t border-slate-100 p-4">
+            {customer.portalUser ? (
+              <div className="mb-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-sm">
+                <p className="font-bold text-slate-900">{customer.portalUser.name}</p>
+                <p className="mt-1 text-slate-500">{customer.portalUser.email}</p>
+              </div>
+            ) : null}
+
             <form action="/api/client/auth/logout" method="post">
               <button
                 type="submit"
@@ -103,7 +127,10 @@ export default function CustomerPortalShell({
 
       <div className="xl:pl-[292px]">
         <div className="px-4 py-6 md:px-6 xl:px-8">
-          <section className="mb-6 overflow-hidden rounded-lg text-white shadow-sm" style={{ backgroundColor: brandColor }}>
+          <section
+            className="mb-6 overflow-hidden rounded-lg text-white shadow-sm"
+            style={{ backgroundColor: brandColor }}
+          >
             <div className="px-5 py-6 md:px-7">
               <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
                 <div>
@@ -117,6 +144,7 @@ export default function CustomerPortalShell({
               </div>
             </div>
           </section>
+
           {children}
         </div>
       </div>

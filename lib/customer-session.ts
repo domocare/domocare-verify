@@ -4,8 +4,10 @@ export const CUSTOMER_SESSION_COOKIE = "domocare_customer_session";
 
 export type CustomerSessionPayload = {
   customerId: string;
+  userId?: string;
   email: string;
   name: string;
+  userName?: string;
   exp: number;
 };
 

@@ -5,6 +5,32 @@ import {
   verifyCustomerSessionToken,
 } from "@/lib/customer-session";
 
+async function getPortalUser(customerId: string, session: ReturnType<typeof verifyCustomerSessionToken>) {
+  if (!session) return null;
+
+  if (session.userId) {
+    const byId = await prisma.customerPortalUser.findFirst({
+      where: {
+        id: session.userId,
+        customerId,
+        isActive: true,
+      },
+    });
+
+    if (byId) return byId;
+  }
+
+  if (!session.email) return null;
+
+  return prisma.customerPortalUser.findFirst({
+    where: {
+      customerId,
+      email: session.email,
+      isActive: true,
+    },
+  });
+}
+
 function parseCookieHeader(cookieHeader: string | null) {
   if (!cookieHeader) return null;
 
@@ -31,7 +57,14 @@ export async function getCustomerSession() {
   });
 
   if (!customer || !customer.clientPortalEnabled) return null;
-  return customer;
+
+  const portalUser = await getPortalUser(customer.id, session);
+  if (!portalUser) return null;
+
+  return {
+    ...customer,
+    portalUser,
+  };
 }
 
 export async function getCustomerSessionFromRequest(request: Request) {
@@ -43,5 +76,12 @@ export async function getCustomerSessionFromRequest(request: Request) {
   });
 
   if (!customer || !customer.clientPortalEnabled) return null;
-  return customer;
+
+  const portalUser = await getPortalUser(customer.id, session);
+  if (!portalUser) return null;
+
+  return {
+    ...customer,
+    portalUser,
+  };
 }

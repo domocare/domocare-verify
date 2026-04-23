@@ -87,9 +87,24 @@ model Customer {
   portalCanViewCodes Boolean @default(true)
   portalCanViewSites Boolean @default(true)
   portalCanViewScans Boolean @default(true)
+  portalCanManageUsers Boolean @default(true)
   sites     CustomerSite[]
   accessCodes CustomerAccessCode[]
   employees Employee[]
+  portalUsers CustomerPortalUser[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CustomerPortalUser {
+  id        String   @id @default(cuid())
+  customerId String
+  customer  Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  email     String   @unique
+  name      String
+  passwordHash String?
+  isOwner   Boolean  @default(false)
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

@@ -35,6 +35,16 @@ export async function GET(req: Request) {
       sites: {
         orderBy: [{ isActive: "desc" }, { name: "asc" }],
       },
+      portalUsers: {
+        orderBy: [{ isOwner: "desc" }, { name: "asc" }],
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          isOwner: true,
+          isActive: true,
+        },
+      },
     },
   });
 
@@ -69,6 +79,7 @@ export async function POST(req: Request) {
       portalCanViewCodes: body.portalCanViewCodes !== false,
       portalCanViewSites: body.portalCanViewSites !== false,
       portalCanViewScans: body.portalCanViewScans !== false,
+      portalCanManageUsers: body.portalCanManageUsers !== false,
     },
     update: {
       siret: readText(body.siret),
@@ -84,6 +95,7 @@ export async function POST(req: Request) {
       portalCanViewCodes: body.portalCanViewCodes !== false,
       portalCanViewSites: body.portalCanViewSites !== false,
       portalCanViewScans: body.portalCanViewScans !== false,
+      portalCanManageUsers: body.portalCanManageUsers !== false,
     },
   });
 
@@ -125,6 +137,7 @@ export async function PATCH(req: Request) {
       portalCanViewCodes: body.portalCanViewCodes !== false,
       portalCanViewSites: body.portalCanViewSites !== false,
       portalCanViewScans: body.portalCanViewScans !== false,
+      portalCanManageUsers: body.portalCanManageUsers !== false,
     },
   });
 
