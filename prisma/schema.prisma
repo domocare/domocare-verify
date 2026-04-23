@@ -15,6 +15,12 @@ model Employee {
   jobTitle     String?
   agency       String?
   company      String?
+  interventionTypeId String?
+  interventionTypeRef InterventionType? @relation(fields: [interventionTypeId], references: [id], onDelete: SetNull)
+  customerId   String?
+  customer     Customer?      @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  customerSiteId String?
+  customerSite CustomerSite?  @relation(fields: [customerSiteId], references: [id], onDelete: SetNull)
   photoUrl     String?
   phoneAgency  String?
   interventionType String?
@@ -50,6 +56,72 @@ model Agency {
   phone     String?
   email     String?
   director  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model InterventionType {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  isActive    Boolean  @default(true)
+  employees   Employee[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  siret     String?
+  address   String?
+  postalCode String?
+  city      String?
+  activity  String?
+  accessCodeEnabled Boolean @default(false)
+  clientPortalEnabled Boolean @default(false)
+  portalCanViewCodes Boolean @default(true)
+  portalCanViewSites Boolean @default(true)
+  portalCanViewScans Boolean @default(true)
+  sites     CustomerSite[]
+  accessCodes CustomerAccessCode[]
+  employees Employee[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CustomerSite {
+  id        String   @id @default(cuid())
+  customerId String
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  name      String
+  address   String?
+  postalCode String?
+  city      String?
+  codeRequired Boolean @default(false)
+  isActive  Boolean @default(true)
+  accessCodes CustomerAccessCode[]
+  employees Employee[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([customerId, name])
+}
+
+model CustomerAccessCode {
+  id        String   @id @default(cuid())
+  customerId String
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  siteId    String?
+  site      CustomerSite? @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  label     String
+  codeHash  String
+  codeLast4 String?
+  scope     String   @default("site")
+  isOneTime Boolean  @default(false)
+  isActive  Boolean  @default(true)
+  expiresAt DateTime?
+  usedAt    DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -124,6 +196,11 @@ model ScanLog {
   token     String
   result    String
   company   String?
+  customerId String?
+  customerName String?
+  customerSiteId String?
+  customerSiteName String?
+  accessCodeStatus String?
   latitude  Float?
   longitude Float?
   accuracy  Float?

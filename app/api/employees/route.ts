@@ -34,6 +34,9 @@ export async function POST(req: Request) {
 
     const body = await req.json();
     const photoUrl = typeof body.photoUrl === "string" ? body.photoUrl : "";
+    const interventionTypeId = typeof body.interventionTypeId === "string" && body.interventionTypeId ? body.interventionTypeId : null;
+    const customerId = typeof body.customerId === "string" && body.customerId ? body.customerId : null;
+    const customerSiteId = typeof body.customerSiteId === "string" && body.customerSiteId ? body.customerSiteId : null;
 
     if (photoUrl && !photoUrl.startsWith("data:image/")) {
       return Response.json({ ok: false }, { status: 400 });
@@ -82,6 +85,9 @@ export async function POST(req: Request) {
         jobTitle: body.jobTitle || null,
         agency: body.agency || null,
         company: body.company || null,
+        interventionTypeId,
+        customerId,
+        customerSiteId,
         photoUrl: photoUrl || null,
         phoneAgency: body.phoneAgency || null,
         interventionType: body.interventionType || null,

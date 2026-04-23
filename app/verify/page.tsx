@@ -1,5 +1,6 @@
 import { connection } from "next/server";
 import { headers } from "next/headers";
+import AccessCodeVerification from "@/components/access-code-verification";
 import CompanyLogo from "@/components/company-logo";
 import ScanLocationReporter from "@/components/scan-location-reporter";
 import { getCompanyBrand } from "@/lib/company-branding";
@@ -126,6 +127,9 @@ async function getEmployeeByToken(token: string) {
     include: {
       qrToken: true,
       authorization: true,
+      interventionTypeRef: true,
+      customer: true,
+      customerSite: true,
     },
   });
 }
@@ -134,10 +138,20 @@ async function logScan({
   token,
   result,
   company,
+  customerId,
+  customerName,
+  customerSiteId,
+  customerSiteName,
+  accessCodeStatus,
 }: {
   token: string;
   result: string;
   company?: string | null;
+  customerId?: string | null;
+  customerName?: string | null;
+  customerSiteId?: string | null;
+  customerSiteName?: string | null;
+  accessCodeStatus?: string | null;
 }) {
   const headersList = await headers();
   const latitude = readHeaderNumber(headersList, "x-vercel-ip-latitude");
@@ -150,6 +164,11 @@ async function logScan({
       token,
       result,
       company: company || null,
+      customerId: customerId || null,
+      customerName: customerName || null,
+      customerSiteId: customerSiteId || null,
+      customerSiteName: customerSiteName || null,
+      accessCodeStatus: accessCodeStatus || null,
       latitude,
       longitude,
       locationLabel,
@@ -247,7 +266,16 @@ export default async function VerifyPage({
 
   if (isRevoked || isExpired) {
     const result = isRevoked ? "suspended" : "expired";
-    const scan = await logScan({ token, result, company: employee.company });
+    const scan = await logScan({
+      token,
+      result,
+      company: employee.company,
+      customerId: employee.customerId,
+      customerName: employee.customer?.name,
+      customerSiteId: employee.customerSiteId,
+      customerSiteName: employee.customerSite?.name,
+      accessCodeStatus: "qr_not_authorized",
+    });
     const companyRecord = employee.company
       ? await prisma.company.findUnique({ where: { name: employee.company } })
       : null;
@@ -264,10 +292,34 @@ export default async function VerifyPage({
     );
   }
 
-  const scan = await logScan({ token, result: "valid", company: employee.company });
   const companyRecord = employee.company
     ? await prisma.company.findUnique({ where: { name: employee.company } })
     : null;
+  const requiresAccessCode = Boolean(employee.customer?.accessCodeEnabled || employee.customerSite?.codeRequired);
+
+  if (requiresAccessCode) {
+    return (
+      <VerifyCard
+        state="valid"
+        message="QR code reconnu. La validation d'entrée nécessite le code d'accès du client."
+        company={employee.company}
+        companyLogoUrl={companyRecord?.logoUrl}
+      >
+        <PublicEmployeeSummary token={token} employee={employee} state="valid" requiresAccessCode />
+      </VerifyCard>
+    );
+  }
+
+  const scan = await logScan({
+    token,
+    result: "valid",
+    company: employee.company,
+    customerId: employee.customerId,
+    customerName: employee.customer?.name,
+    customerSiteId: employee.customerSiteId,
+    customerSiteName: employee.customerSite?.name,
+    accessCodeStatus: "not_required",
+  });
 
   return (
     <VerifyCard
@@ -285,13 +337,19 @@ function PublicEmployeeSummary({
   token,
   employee,
   state,
+  requiresAccessCode = false,
 }: {
   token: string;
   employee: NonNullable<Awaited<ReturnType<typeof getEmployeeByToken>>>;
   state: "valid" | "expired" | "suspended";
+  requiresAccessCode?: boolean;
 }) {
   const meta = getStateMeta(state);
   const validUntil = employee.authorization?.validUntil || employee.qrToken?.expiresAt;
+  const authorizedSite =
+    employee.customer && employee.customerSite
+      ? `${employee.customer.name} - ${employee.customerSite.name}`
+      : employee.customer?.name || employee.authorizedSite;
 
   return (
     <div>
@@ -329,9 +387,20 @@ function PublicEmployeeSummary({
           <PublicInfo label="Validite" value={validUntil ? `Jusqu'au ${formatDate(validUntil)}` : "-"} />
           <PublicInfo label="Type d'intervention" value={employee.interventionType} />
           <PublicInfo label="Véhicule" value={employee.vehiclePlate} />
-          <PublicInfo label="Site ou client autorisé" value={employee.authorizedSite} />
+          <PublicInfo label="Site ou client autorisé" value={authorizedSite} />
           <PublicInfo label="Contact agence" value={employee.phoneAgency} />
         </div>
+
+        {employee.interventionTypeRef?.description ? (
+          <div className="mt-3 rounded-lg bg-slate-50 p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+              Précisions intervention
+            </p>
+            <p className="mt-2 text-sm font-semibold leading-6 text-slate-950">
+              {employee.interventionTypeRef.description}
+            </p>
+          </div>
+        ) : null}
 
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
           {employee.phoneAgency ? (
@@ -353,9 +422,18 @@ function PublicEmployeeSummary({
 
       <div className="border-t bg-slate-50 p-4 text-sm leading-6 text-slate-600">
         {state === "valid"
-          ? "Si la photo, le véhicule ou le motif d'intervention ne correspondent pas, signalez l'anomalie avant de laisser intervenir."
+          ? requiresAccessCode
+            ? "Ne laissez entrer le collaborateur que si le code client valide l'accès après ce contrôle QR."
+            : "Si la photo, le véhicule ou le motif d'intervention ne correspondent pas, signalez l'anomalie avant de laisser intervenir."
           : "Par sécurité, contactez l'agence ou signalez l'anomalie avant toute intervention."}
       </div>
+      {requiresAccessCode ? (
+        <AccessCodeVerification
+          token={token}
+          customerName={employee.customer?.name}
+          siteName={employee.customerSite?.name}
+        />
+      ) : null}
     </div>
   );
 }
