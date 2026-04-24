@@ -80,3 +80,38 @@ export async function PATCH(req: Request) {
 
   return Response.json({ ok: true, site });
 }
+
+export async function DELETE(req: Request) {
+  const authError = await ensureWriteAccess(req);
+  if (authError) return authError;
+
+  const body = await req.json();
+  const id = readText(body.id);
+
+  if (!id) {
+    return Response.json({ ok: false, message: "Identifiant manquant." }, { status: 400 });
+  }
+
+  const linkedEmployees = await prisma.employee.count({
+    where: {
+      customerSiteId: id,
+    },
+  });
+
+  if (linkedEmployees > 0) {
+    return Response.json(
+      {
+        ok: false,
+        message:
+          "Ce site est encore utilisé sur des collaborateurs. Modifiez les fiches avant suppression.",
+      },
+      { status: 409 },
+    );
+  }
+
+  await prisma.customerSite.delete({
+    where: { id },
+  });
+
+  return Response.json({ ok: true });
+}

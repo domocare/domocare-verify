@@ -194,3 +194,38 @@ export async function PATCH(req: Request) {
 
   return Response.json({ ok: true, customer });
 }
+
+export async function DELETE(req: Request) {
+  const authError = await ensureWriteAccess(req);
+  if (authError) return authError;
+
+  const body = await req.json();
+  const id = readText(body.id);
+
+  if (!id) {
+    return Response.json({ ok: false, message: "Identifiant manquant." }, { status: 400 });
+  }
+
+  const linkedEmployees = await prisma.employee.count({
+    where: {
+      customerId: id,
+    },
+  });
+
+  if (linkedEmployees > 0) {
+    return Response.json(
+      {
+        ok: false,
+        message:
+          "Ce client final est encore utilisé sur des collaborateurs. Modifiez les fiches avant suppression.",
+      },
+      { status: 409 },
+    );
+  }
+
+  await prisma.customer.delete({
+    where: { id },
+  });
+
+  return Response.json({ ok: true });
+}
