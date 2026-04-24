@@ -61,6 +61,13 @@ function splitAgencyNames(value: string) {
     .filter(Boolean);
 }
 
+function splitInterventionNames(value: string) {
+  return value
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
 export default function NewEmployeePage() {
   const [form, setForm] = useState({
     firstName: "",
@@ -70,6 +77,7 @@ export default function NewEmployeePage() {
     agency: "",
     photoUrl: "",
     phoneAgency: "",
+    interventionTypeIds: [] as string[],
     interventionTypeId: "",
     interventionType: "",
     customerId: "",
@@ -172,6 +180,10 @@ export default function NewEmployeePage() {
   const selectedAgencyPhones = Array.from(
     new Set(selectedAgencies.map((agency) => agency.phone).filter(Boolean)),
   );
+  const selectedInterventionNames = splitInterventionNames(form.interventionType);
+  const selectedInterventionDescriptions = interventionTypes
+    .filter((item) => selectedInterventionNames.includes(item.name) && item.description)
+    .map((item) => ({ id: item.id, name: item.name, description: item.description }));
   const selectedCustomer = customers.find((customer) => customer.id === form.customerId);
   const availableSites = selectedCustomer?.sites.filter((site) => site.isActive) || [];
 
@@ -320,31 +332,42 @@ export default function NewEmployeePage() {
           ) : null}
 
           <div className="grid gap-4 md:grid-cols-3">
-            <select
-              className="w-full rounded-lg border p-3"
-              value={form.interventionTypeId}
-              onChange={(e) => {
-                const intervention = interventionTypes.find((item) => item.id === e.target.value);
-                setForm({
-                  ...form,
-                  interventionTypeId: e.target.value,
-                  interventionType: intervention?.name || "",
-                });
-              }}
-            >
-              <option value="">Type intervention autorisée</option>
-              {interventionTypes.map((intervention) => (
-                <option key={intervention.id} value={intervention.id}>
-                  {intervention.name}
-                </option>
-              ))}
-            </select>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Types d&apos;intervention autorisés</label>
+              <select
+                className="min-h-32 w-full rounded-lg border p-3"
+                value={form.interventionTypeIds}
+                multiple
+                onChange={(e) => {
+                  const values = Array.from(e.target.selectedOptions).map((option) => option.value);
+                  const selectedTypes = interventionTypes.filter((item) => values.includes(item.id));
+
+                  setForm({
+                    ...form,
+                    interventionTypeIds: values,
+                    interventionTypeId: values[0] || "",
+                    interventionType: selectedTypes.map((item) => item.name).join(", "),
+                  });
+                }}
+              >
+                {interventionTypes.map((intervention) => (
+                  <option key={intervention.id} value={intervention.id}>
+                    {intervention.name}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-slate-500">
+                Maintenez Ctrl pour sélectionner plusieurs types si nécessaire.
+              </p>
+            </div>
+
             <input
               className="w-full rounded-lg border p-3"
               placeholder="Véhicule / plaque"
               value={form.vehiclePlate}
               onChange={(e) => setForm({ ...form, vehiclePlate: e.target.value })}
             />
+
             <select
               className="w-full rounded-lg border p-3"
               value={form.customerId}
@@ -366,6 +389,22 @@ export default function NewEmployeePage() {
               ))}
             </select>
           </div>
+
+          {selectedInterventionDescriptions.length > 0 ? (
+            <div className="rounded-lg border bg-slate-50 p-4">
+              <p className="text-sm font-semibold text-slate-900">
+                Précisions des interventions sélectionnées
+              </p>
+              <div className="mt-3 space-y-2">
+                {selectedInterventionDescriptions.map((item) => (
+                  <div key={item.id}>
+                    <p className="text-sm font-semibold text-slate-800">{item.name}</p>
+                    <p className="text-sm text-slate-600">{item.description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
 
           {selectedCustomer ? (
             <select

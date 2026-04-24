@@ -16,6 +16,15 @@ function splitAgencyNames(value: unknown) {
     : [];
 }
 
+function readInterventionTypeIds(value: unknown) {
+  return Array.isArray(value)
+    ? value
+        .filter((item): item is string => typeof item === "string")
+        .map((item) => item.trim())
+        .filter(Boolean)
+    : [];
+}
+
 export async function POST(req: Request) {
   const authError = await requireRole(req, [
     "SUPER_ADMIN_GROUP",
@@ -34,13 +43,26 @@ export async function POST(req: Request) {
 
     const body = await req.json();
     const photoUrl = typeof body.photoUrl === "string" ? body.photoUrl : "";
-    const interventionTypeId = typeof body.interventionTypeId === "string" && body.interventionTypeId ? body.interventionTypeId : null;
+    const interventionTypeIds = readInterventionTypeIds(body.interventionTypeIds);
     const customerId = typeof body.customerId === "string" && body.customerId ? body.customerId : null;
     const customerSiteId = typeof body.customerSiteId === "string" && body.customerSiteId ? body.customerSiteId : null;
 
     if (photoUrl && !photoUrl.startsWith("data:image/")) {
       return Response.json({ ok: false }, { status: 400 });
     }
+
+    const selectedInterventionTypesRaw = interventionTypeIds.length
+      ? await prisma.interventionType.findMany({
+          where: { id: { in: interventionTypeIds } },
+        })
+      : [];
+
+    const selectedInterventionTypes = interventionTypeIds
+      .map((id) => selectedInterventionTypesRaw.find((item) => item.id === id))
+      .filter((item): item is NonNullable<typeof item> => Boolean(item));
+
+    const interventionTypeNames = selectedInterventionTypes.map((item) => item.name);
+    const interventionTypeId = selectedInterventionTypes[0]?.id || null;
 
     if (photoUrl.length > 2_100_000) {
       return Response.json({ ok: false }, { status: 413 });
@@ -90,7 +112,7 @@ export async function POST(req: Request) {
         customerSiteId,
         photoUrl: photoUrl || null,
         phoneAgency: body.phoneAgency || null,
-        interventionType: body.interventionType || null,
+        interventionType: interventionTypeNames.join(", ") || null,
         vehiclePlate: body.vehiclePlate || null,
         authorizedSite: body.authorizedSite || null,
         isActive: true,

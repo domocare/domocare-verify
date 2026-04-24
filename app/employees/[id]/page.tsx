@@ -32,6 +32,16 @@ type EmployeeWithRelations = Prisma.EmployeeGetPayload<{
   };
 }>;
 
+type SettingItem = {
+  id: string;
+  name: string;
+};
+
+type InterventionTypeItem = SettingItem & {
+  description: string | null;
+  isActive: boolean;
+};
+
 function formatDate(date?: Date | null) {
   if (!date) return "-";
 
@@ -54,6 +64,13 @@ function splitAgencyNames(value?: string | null) {
     .filter(Boolean);
 }
 
+function splitInterventionNames(value?: string | null) {
+  return String(value || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
 function formatScanLocation(scan: {
   latitude?: number | null;
   longitude?: number | null;
@@ -61,7 +78,12 @@ function formatScanLocation(scan: {
   locationLabel?: string | null;
   locationSource?: string | null;
 }) {
-  if (scan.latitude === null || scan.latitude === undefined || scan.longitude === null || scan.longitude === undefined) {
+  if (
+    scan.latitude === null ||
+    scan.latitude === undefined ||
+    scan.longitude === null ||
+    scan.longitude === undefined
+  ) {
     if (scan.locationLabel) {
       return {
         label: scan.locationLabel,
@@ -82,7 +104,7 @@ function formatScanLocation(scan: {
 
 function getStatusLabel(status?: string | null) {
   if (status === "active") return "Autorisé";
-  if (status === "expired") return "Expire";
+  if (status === "expired") return "Expiré";
   if (status === "revoked" || status === "suspended") return "Suspendu";
   return "Inconnu";
 }
@@ -101,14 +123,15 @@ export default async function EmployeeDetailPage({ params, searchParams }: Props
   const isEditing = edit === "1";
 
   let employee: EmployeeWithRelations | null = null;
-  let companies: { id: string; name: string }[] = [];
+  let companies: SettingItem[] = [];
   let agencies: { id: string; name: string; companyId: string | null }[] = [];
+  let interventionTypes: InterventionTypeItem[] = [];
 
   try {
     const access = await getAccessContext();
     const scopedWhere = access ? getEmployeeScopeWhere(access) : { id: "__no_access__" };
 
-    [employee, companies, agencies] = await Promise.all([
+    [employee, companies, agencies, interventionTypes] = await Promise.all([
       prisma.employee.findFirst({
         where: { id, ...scopedWhere },
         include: {
@@ -121,6 +144,9 @@ export default async function EmployeeDetailPage({ params, searchParams }: Props
         orderBy: [{ company: { name: "asc" } }, { name: "asc" }],
         include: { company: true },
       }),
+      prisma.interventionType.findMany({
+        orderBy: { name: "asc" },
+      }),
     ]);
   } catch (error) {
     console.error("Employee detail database error", error);
@@ -130,7 +156,10 @@ export default async function EmployeeDetailPage({ params, searchParams }: Props
         title="Fiche collaborateur"
         subtitle="Les informations ne peuvent pas être chargées pour le moment."
         actions={
-          <Link href="/employees" className="rounded-lg border bg-white px-4 py-2 text-sm font-medium">
+          <Link
+            href="/employees"
+            className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-800"
+          >
             Retour à la liste
           </Link>
         }
@@ -164,6 +193,13 @@ export default async function EmployeeDetailPage({ params, searchParams }: Props
     ? agencies.filter((agency) => agency.companyId === selectedCompany.id)
     : agencies;
   const selectedAgencyNames = splitAgencyNames(employee.agency);
+  const selectedInterventionNames = splitInterventionNames(employee.interventionType);
+  const selectedInterventionIds = interventionTypes
+    .filter((item) => selectedInterventionNames.includes(item.name))
+    .map((item) => item.id);
+  const selectedInterventionDescriptions = interventionTypes.filter(
+    (item) => selectedInterventionNames.includes(item.name) && item.description,
+  );
 
   return (
     <BackofficeShell
@@ -171,11 +207,17 @@ export default async function EmployeeDetailPage({ params, searchParams }: Props
       subtitle="Fiche collaborateur, statut d'autorisation et QR code de vérification."
       actions={
         <>
-          <Link href="/employees" className="rounded-lg border bg-white px-4 py-2 text-sm font-medium">
+          <Link
+            href="/employees"
+            className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-800"
+          >
             Retour à la liste
           </Link>
           {isEditing ? (
-            <Link href={`/employees/${employee.id}`} className="rounded-lg border bg-white px-4 py-2 text-sm font-medium">
+            <Link
+              href={`/employees/${employee.id}`}
+              className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-800"
+            >
               Annuler
             </Link>
           ) : (
@@ -225,9 +267,15 @@ export default async function EmployeeDetailPage({ params, searchParams }: Props
                   name="agency"
                   defaultValues={selectedAgencyNames}
                   items={filteredAgencies}
+                  helper="Maintenez Ctrl pour sélectionner plusieurs agences."
                 />
                 <EditField label="Téléphone agence" name="phoneAgency" defaultValue={employee.phoneAgency} />
-                <EditField label="Type intervention" name="interventionType" defaultValue={employee.interventionType} />
+                <EditInterventionMultiSelect
+                  defaultValues={selectedInterventionIds}
+                  items={interventionTypes.filter(
+                    (item) => item.isActive || selectedInterventionNames.includes(item.name),
+                  )}
+                />
                 <EditField label="Véhicule / plaque" name="vehiclePlate" defaultValue={employee.vehiclePlate} />
                 <EditField label="Client ou site autorisé" name="authorizedSite" defaultValue={employee.authorizedSite} />
                 <EditField label="Photo URL ou base64" name="photoUrl" defaultValue={employee.photoUrl} />
@@ -269,6 +317,20 @@ export default async function EmployeeDetailPage({ params, searchParams }: Props
                 />
               </div>
 
+              {selectedInterventionDescriptions.length > 0 ? (
+                <div className="mt-5 rounded-lg border bg-slate-50 p-4">
+                  <p className="text-sm font-semibold text-slate-900">Précisions des interventions</p>
+                  <div className="mt-3 space-y-2">
+                    {selectedInterventionDescriptions.map((item) => (
+                      <div key={item.id}>
+                        <p className="text-sm font-semibold text-slate-800">{item.name}</p>
+                        <p className="text-sm text-slate-600">{item.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
               <div className="mt-5 flex flex-wrap gap-3">
                 <button
                   type="submit"
@@ -278,7 +340,7 @@ export default async function EmployeeDetailPage({ params, searchParams }: Props
                 </button>
                 <Link
                   href={`/employees/${employee.id}`}
-                  className="rounded-lg border bg-white px-5 py-3 text-sm font-semibold text-slate-800"
+                  className="rounded-lg border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-800"
                 >
                   Annuler
                 </Link>
@@ -286,57 +348,69 @@ export default async function EmployeeDetailPage({ params, searchParams }: Props
             </form>
           ) : (
             <div className="rounded-lg border bg-white p-5 shadow-sm md:p-6">
-          <div className="flex flex-wrap items-start justify-between gap-4 border-b pb-5">
-            <div className="flex flex-wrap items-center gap-4">
-              {employee.photoUrl ? (
-                <img
-                  src={employee.photoUrl}
-                  alt={`${employee.firstName} ${employee.lastName}`}
-                  className="h-24 w-24 rounded-xl object-cover border bg-slate-50"
-                />
-              ) : (
-                <div className="flex h-24 w-24 items-center justify-center rounded-xl border bg-slate-50 text-sm text-slate-400">
-                  Photo
-                </div>
-              )}
+              <div className="flex flex-wrap items-start justify-between gap-4 border-b pb-5">
+                <div className="flex flex-wrap items-center gap-4">
+                  {employee.photoUrl ? (
+                    <img
+                      src={employee.photoUrl}
+                      alt={`${employee.firstName} ${employee.lastName}`}
+                      className="h-24 w-24 rounded-xl border bg-slate-50 object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-24 w-24 items-center justify-center rounded-xl border bg-slate-50 text-sm text-slate-400">
+                      Photo
+                    </div>
+                  )}
 
-              <div>
-                <p className="text-sm font-medium text-slate-500">Collaborateur</p>
-                <h2 className="mt-1 text-2xl font-semibold">
-                  {employee.firstName} {employee.lastName}
-                </h2>
-                <p className="mt-2 text-slate-600">{employee.jobTitle || "Fonction non renseignée"}</p>
+                  <div>
+                    <p className="text-sm font-medium text-slate-500">Collaborateur</p>
+                    <h2 className="mt-1 text-2xl font-semibold">
+                      {employee.firstName} {employee.lastName}
+                    </h2>
+                    <p className="mt-2 text-slate-600">{employee.jobTitle || "Fonction non renseignée"}</p>
+                  </div>
+                </div>
+
+                <span className={`rounded-full border px-3 py-1 text-sm font-semibold ${getBadgeClass(status)}`}>
+                  {getStatusLabel(status)}
+                </span>
+              </div>
+
+              <div className="grid gap-4 pt-5 md:grid-cols-2">
+                <InfoItem label="Société" value={employee.company} />
+                <InfoItem label="Agence" value={employee.agency} />
+                <InfoItem label="Téléphone agence" value={employee.phoneAgency} />
+                <InfoItem label="Types d'intervention" value={employee.interventionType} />
+                <InfoItem label="Véhicule / plaque" value={employee.vehiclePlate} />
+                <InfoItem label="Client ou site autorisé" value={employee.authorizedSite} />
+                <InfoItem label="État collaborateur" value={employee.isActive ? "Actif" : "Inactif"} />
+                <InfoItem label="Autorisation depuis" value={formatDate(employee.authorization?.validFrom)} />
+                <InfoItem label="Valide jusqu'au" value={formatDate(employee.authorization?.validUntil)} />
+                <InfoItem label="QR émis le" value={formatDate(employee.qrToken?.issuedAt)} />
+                <InfoItem label="QR expire le" value={formatDate(employee.qrToken?.expiresAt)} />
+              </div>
+
+              {selectedInterventionDescriptions.length > 0 ? (
+                <div className="mt-5 rounded-lg border bg-slate-50 p-4">
+                  <p className="text-sm font-medium text-slate-500">Précisions intervention</p>
+                  <div className="mt-3 space-y-2">
+                    {selectedInterventionDescriptions.map((item) => (
+                      <div key={item.id}>
+                        <p className="text-sm font-semibold text-slate-900">{item.name}</p>
+                        <p className="text-sm text-slate-700">{item.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
+              <div className="mt-5 rounded-lg bg-slate-50 p-4">
+                <p className="text-sm font-medium text-slate-500">Token</p>
+                <p className="mt-1 break-all font-mono text-sm text-slate-800">
+                  {employee.qrToken?.token || "-"}
+                </p>
               </div>
             </div>
-
-            <span
-              className={`rounded-full border px-3 py-1 text-sm font-semibold ${getBadgeClass(status)}`}
-            >
-              {getStatusLabel(status)}
-            </span>
-          </div>
-
-          <div className="grid gap-4 pt-5 md:grid-cols-2">
-            <InfoItem label="Société" value={employee.company} />
-            <InfoItem label="Agence" value={employee.agency} />
-            <InfoItem label="Téléphone agence" value={employee.phoneAgency} />
-            <InfoItem label="Type intervention" value={employee.interventionType} />
-            <InfoItem label="Véhicule / plaque" value={employee.vehiclePlate} />
-            <InfoItem label="Client ou site autorisé" value={employee.authorizedSite} />
-            <InfoItem label="Etat collaborateur" value={employee.isActive ? "Actif" : "Inactif"} />
-            <InfoItem label="Autorisation depuis" value={formatDate(employee.authorization?.validFrom)} />
-            <InfoItem label="Valide jusqu'au" value={formatDate(employee.authorization?.validUntil)} />
-            <InfoItem label="QR emis le" value={formatDate(employee.qrToken?.issuedAt)} />
-            <InfoItem label="QR expire le" value={formatDate(employee.qrToken?.expiresAt)} />
-          </div>
-
-          <div className="mt-5 rounded-lg bg-slate-50 p-4">
-            <p className="text-sm font-medium text-slate-500">Token</p>
-            <p className="mt-1 break-all font-mono text-sm text-slate-800">
-              {employee.qrToken?.token || "-"}
-            </p>
-          </div>
-          </div>
           )}
 
           <div className="rounded-lg border bg-white p-5 shadow-sm md:p-6">
@@ -356,14 +430,14 @@ export default async function EmployeeDetailPage({ params, searchParams }: Props
                   type="submit"
                   className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700"
                 >
-                  Reactiver
+                  Réactiver
                 </button>
               </form>
 
               <form action={regenerateAction}>
                 <button
                   type="submit"
-                  className="rounded-lg border bg-white px-4 py-2 text-sm font-semibold text-slate-800"
+                  className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800"
                 >
                   Régénérer QR
                 </button>
@@ -508,11 +582,10 @@ function EditSelect({
   label: string;
   name: string;
   defaultValue?: string | null;
-  items: { id: string; name: string }[];
+  items: SettingItem[];
   emptyLabel: string;
 }) {
-  const hasCurrentValue =
-    !!defaultValue && !items.some((item) => item.name === defaultValue);
+  const hasCurrentValue = !!defaultValue && !items.some((item) => item.name === defaultValue);
 
   return (
     <div className="space-y-2">
@@ -542,15 +615,15 @@ function EditMultiSelect({
   name,
   defaultValues,
   items,
+  helper,
 }: {
   label: string;
   name: string;
   defaultValues: string[];
-  items: { id: string; name: string }[];
+  items: SettingItem[];
+  helper?: string;
 }) {
-  const missingValues = defaultValues.filter(
-    (value) => !items.some((item) => item.name === value),
-  );
+  const missingValues = defaultValues.filter((value) => !items.some((item) => item.name === value));
 
   return (
     <div className="space-y-2">
@@ -575,8 +648,45 @@ function EditMultiSelect({
           </option>
         ))}
       </select>
+      {helper ? <p className="text-xs text-slate-500">{helper}</p> : null}
+    </div>
+  );
+}
+
+function EditInterventionMultiSelect({
+  defaultValues,
+  items,
+}: {
+  defaultValues: string[];
+  items: InterventionTypeItem[];
+}) {
+  const missingValues = defaultValues.filter((value) => !items.some((item) => item.id === value));
+
+  return (
+    <div className="space-y-2 md:col-span-2">
+      <label className="text-sm font-medium text-slate-600" htmlFor="interventionTypeIds">
+        Types d&apos;intervention
+      </label>
+      <select
+        id="interventionTypeIds"
+        name="interventionTypeIds"
+        defaultValue={defaultValues}
+        multiple
+        className="min-h-32 w-full rounded-lg border bg-white px-4 py-3"
+      >
+        {missingValues.map((value) => (
+          <option key={value} value={value}>
+            Type existant
+          </option>
+        ))}
+        {items.map((item) => (
+          <option key={item.id} value={item.id}>
+            {item.name}
+          </option>
+        ))}
+      </select>
       <p className="text-xs text-slate-500">
-        Maintenez Ctrl pour sélectionner plusieurs agences.
+        Maintenez Ctrl pour sélectionner plusieurs types d&apos;intervention.
       </p>
     </div>
   );

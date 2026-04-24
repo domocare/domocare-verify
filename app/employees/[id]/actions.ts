@@ -29,6 +29,23 @@ function readTextList(formData: FormData, key: string) {
     .filter(Boolean);
 }
 
+async function readInterventionSelection(formData: FormData) {
+  const interventionTypeIds = readTextList(formData, "interventionTypeIds");
+  const selectedTypesRaw = interventionTypeIds.length
+    ? await prisma.interventionType.findMany({
+        where: { id: { in: interventionTypeIds } },
+      })
+    : [];
+  const selectedTypes = interventionTypeIds
+    .map((id) => selectedTypesRaw.find((item) => item.id === id))
+    .filter((item): item is NonNullable<typeof item> => Boolean(item));
+
+  return {
+    interventionTypeId: selectedTypes[0]?.id || null,
+    interventionType: selectedTypes.map((item) => item.name).join(", ") || null,
+  };
+}
+
 function readStatus(formData: FormData) {
   const status = readText(formData, "status") || "active";
 
@@ -102,6 +119,7 @@ export async function updateEmployee(employeeId: string, formData: FormData) {
 
   const company = readText(formData, "company");
   const agencyNames = readTextList(formData, "agency");
+  const interventionSelection = await readInterventionSelection(formData);
   const agency = agencyNames.join(", ") || null;
   const status = readStatus(formData);
   const validFrom = readDate(formData, "validFrom");
@@ -137,7 +155,8 @@ export async function updateEmployee(employeeId: string, formData: FormData) {
         company,
         agency,
         phoneAgency: readText(formData, "phoneAgency"),
-        interventionType: readText(formData, "interventionType"),
+        interventionTypeId: interventionSelection.interventionTypeId,
+        interventionType: interventionSelection.interventionType,
         vehiclePlate: readText(formData, "vehiclePlate"),
         authorizedSite: readText(formData, "authorizedSite"),
         photoUrl: readText(formData, "photoUrl"),
