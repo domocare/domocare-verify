@@ -29,6 +29,8 @@ type EmployeeWithRelations = Prisma.EmployeeGetPayload<{
   include: {
     authorization: true;
     qrToken: true;
+    customer: true;
+    customerSite: true;
   };
 }>;
 
@@ -40,6 +42,18 @@ type SettingItem = {
 type InterventionTypeItem = SettingItem & {
   description: string | null;
   isActive: boolean;
+};
+
+type CustomerSiteItem = {
+  id: string;
+  customerId: string;
+  name: string;
+  isActive: boolean;
+  codeRequired: boolean;
+};
+
+type CustomerItem = SettingItem & {
+  sites: CustomerSiteItem[];
 };
 
 function formatDate(date?: Date | null) {
@@ -126,17 +140,20 @@ export default async function EmployeeDetailPage({ params, searchParams }: Props
   let companies: SettingItem[] = [];
   let agencies: { id: string; name: string; companyId: string | null }[] = [];
   let interventionTypes: InterventionTypeItem[] = [];
+  let customers: CustomerItem[] = [];
 
   try {
     const access = await getAccessContext();
     const scopedWhere = access ? getEmployeeScopeWhere(access) : { id: "__no_access__" };
 
-    [employee, companies, agencies, interventionTypes] = await Promise.all([
+    [employee, companies, agencies, interventionTypes, customers] = await Promise.all([
       prisma.employee.findFirst({
         where: { id, ...scopedWhere },
         include: {
           authorization: true,
           qrToken: true,
+          customer: true,
+          customerSite: true,
         },
       }),
       prisma.company.findMany({ orderBy: { name: "asc" } }),
@@ -146,6 +163,14 @@ export default async function EmployeeDetailPage({ params, searchParams }: Props
       }),
       prisma.interventionType.findMany({
         orderBy: { name: "asc" },
+      }),
+      prisma.customer.findMany({
+        orderBy: { name: "asc" },
+        include: {
+          sites: {
+            orderBy: { name: "asc" },
+          },
+        },
       }),
     ]);
   } catch (error) {
@@ -200,6 +225,7 @@ export default async function EmployeeDetailPage({ params, searchParams }: Props
   const selectedInterventionDescriptions = interventionTypes.filter(
     (item) => selectedInterventionNames.includes(item.name) && item.description,
   );
+  const selectedCustomerId = employee.customerId || "";
 
   return (
     <BackofficeShell
@@ -277,7 +303,11 @@ export default async function EmployeeDetailPage({ params, searchParams }: Props
                   )}
                 />
                 <EditField label="Véhicule / plaque" name="vehiclePlate" defaultValue={employee.vehiclePlate} />
-                <EditField label="Client ou site autorisé" name="authorizedSite" defaultValue={employee.authorizedSite} />
+                <EditCustomerSiteSelect
+                  customers={customers}
+                  selectedCustomerId={selectedCustomerId}
+                  selectedCustomerSiteId={employee.customerSiteId || ""}
+                />
                 <EditField label="Photo URL ou base64" name="photoUrl" defaultValue={employee.photoUrl} />
 
                 <div className="space-y-2">
@@ -330,6 +360,31 @@ export default async function EmployeeDetailPage({ params, searchParams }: Props
                   </div>
                 </div>
               ) : null}
+
+              <div className="rounded-lg border bg-slate-50 p-4 md:col-span-2">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">Référentiels liés</p>
+                    <p className="mt-1 text-sm text-slate-600">
+                      Gérer les types d&apos;intervention et les clients finaux depuis leurs pages dédiées.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Link
+                      href="/intervention-types"
+                      className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700"
+                    >
+                      Gérer les types
+                    </Link>
+                    <Link
+                      href="/customers"
+                      className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700"
+                    >
+                      Gérer les clients
+                    </Link>
+                  </div>
+                </div>
+              </div>
 
               <div className="mt-5 flex flex-wrap gap-3">
                 <button
@@ -687,6 +742,68 @@ function EditInterventionMultiSelect({
       </select>
       <p className="text-xs text-slate-500">
         Maintenez Ctrl pour sélectionner plusieurs types d&apos;intervention.
+      </p>
+    </div>
+  );
+}
+
+function EditCustomerSiteSelect({
+  customers,
+  selectedCustomerId,
+  selectedCustomerSiteId,
+}: {
+  customers: CustomerItem[];
+  selectedCustomerId: string;
+  selectedCustomerSiteId: string;
+}) {
+  const selectedCustomer = customers.find((customer) => customer.id === selectedCustomerId) || null;
+  const availableSites = selectedCustomer?.sites.filter((site) => site.isActive) || [];
+
+  return (
+    <div className="space-y-4 md:col-span-2">
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-slate-600" htmlFor="customerId">
+            Client final autorisé
+          </label>
+          <select
+            id="customerId"
+            name="customerId"
+            defaultValue={selectedCustomerId}
+            className="w-full rounded-lg border bg-white px-4 py-3"
+          >
+            <option value="">Choisir un client final</option>
+            {customers.map((customer) => (
+              <option key={customer.id} value={customer.id}>
+                {customer.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-slate-600" htmlFor="customerSiteId">
+            Site autorisé
+          </label>
+          <select
+            id="customerSiteId"
+            name="customerSiteId"
+            defaultValue={selectedCustomerSiteId}
+            className="w-full rounded-lg border bg-white px-4 py-3"
+          >
+            <option value="">Tous les sites du client final</option>
+            {availableSites.map((site) => (
+              <option key={site.id} value={site.id}>
+                {site.name}
+                {site.codeRequired ? " - code requis" : ""}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <p className="text-xs text-slate-500">
+        Pour ajouter, modifier ou supprimer un client final, utilisez le bouton “Gérer les clients”.
       </p>
     </div>
   );

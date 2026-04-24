@@ -46,6 +46,31 @@ async function readInterventionSelection(formData: FormData) {
   };
 }
 
+async function readCustomerSelection(formData: FormData) {
+  const customerId = readText(formData, "customerId");
+  const customerSiteId = readText(formData, "customerSiteId");
+
+  const customer = customerId
+    ? await prisma.customer.findUnique({
+        where: { id: customerId },
+        include: {
+          sites: true,
+        },
+      })
+    : null;
+
+  const selectedSite =
+    customer && customerSiteId
+      ? customer.sites.find((site) => site.id === customerSiteId) || null
+      : null;
+
+  return {
+    customerId: customer?.id || null,
+    customerSiteId: selectedSite?.id || null,
+    authorizedSite: selectedSite ? `${customer?.name} - ${selectedSite.name}` : customer?.name || null,
+  };
+}
+
 function readStatus(formData: FormData) {
   const status = readText(formData, "status") || "active";
 
@@ -120,6 +145,7 @@ export async function updateEmployee(employeeId: string, formData: FormData) {
   const company = readText(formData, "company");
   const agencyNames = readTextList(formData, "agency");
   const interventionSelection = await readInterventionSelection(formData);
+  const customerSelection = await readCustomerSelection(formData);
   const agency = agencyNames.join(", ") || null;
   const status = readStatus(formData);
   const validFrom = readDate(formData, "validFrom");
@@ -157,8 +183,10 @@ export async function updateEmployee(employeeId: string, formData: FormData) {
         phoneAgency: readText(formData, "phoneAgency"),
         interventionTypeId: interventionSelection.interventionTypeId,
         interventionType: interventionSelection.interventionType,
+        customerId: customerSelection.customerId,
+        customerSiteId: customerSelection.customerSiteId,
         vehiclePlate: readText(formData, "vehiclePlate"),
-        authorizedSite: readText(formData, "authorizedSite"),
+        authorizedSite: customerSelection.authorizedSite,
         photoUrl: readText(formData, "photoUrl"),
         isActive: !isSuspended,
       },
