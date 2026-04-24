@@ -48,7 +48,8 @@ async function readInterventionSelection(formData: FormData) {
 
 async function readCustomerSelection(formData: FormData) {
   const customerId = readText(formData, "customerId");
-  const customerSiteId = readText(formData, "customerSiteId");
+  const customerSiteIds = readTextList(formData, "customerSiteIds");
+  const legacyCustomerSiteId = readText(formData, "customerSiteId");
 
   const customer = customerId
     ? await prisma.customer.findUnique({
@@ -59,15 +60,19 @@ async function readCustomerSelection(formData: FormData) {
       })
     : null;
 
-  const selectedSite =
-    customer && customerSiteId
-      ? customer.sites.find((site) => site.id === customerSiteId) || null
-      : null;
+  const selectedSites = customer
+    ? (customerSiteIds.length ? customerSiteIds : legacyCustomerSiteId ? [legacyCustomerSiteId] : [])
+        .map((siteId) => customer.sites.find((site) => site.id === siteId))
+        .filter((site): site is NonNullable<typeof site> => Boolean(site))
+    : [];
 
   return {
     customerId: customer?.id || null,
-    customerSiteId: selectedSite?.id || null,
-    authorizedSite: selectedSite ? `${customer?.name} - ${selectedSite.name}` : customer?.name || null,
+    customerSiteId: selectedSites.length === 1 ? selectedSites[0].id : null,
+    authorizedSite:
+      selectedSites.length > 0
+        ? selectedSites.map((site) => `${customer?.name} - ${site.name}`).join(", ")
+        : customer?.name || null,
   };
 }
 

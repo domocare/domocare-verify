@@ -85,6 +85,20 @@ function splitInterventionNames(value?: string | null) {
     .filter(Boolean);
 }
 
+function splitAuthorizedSiteNames(value?: string | null, customerName?: string | null) {
+  return String(value || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .map((item) => {
+      if (customerName && item.startsWith(`${customerName} - `)) {
+        return item.slice(customerName.length + 3).trim();
+      }
+
+      return item;
+    });
+}
+
 function formatScanLocation(scan: {
   latitude?: number | null;
   longitude?: number | null;
@@ -226,6 +240,16 @@ export default async function EmployeeDetailPage({ params, searchParams }: Props
     (item) => selectedInterventionNames.includes(item.name) && item.description,
   );
   const selectedCustomerId = employee.customerId || "";
+  const selectedCustomer = customers.find((customer) => customer.id === selectedCustomerId) || null;
+  const selectedCustomerSiteNames = splitAuthorizedSiteNames(
+    employee.authorizedSite,
+    selectedCustomer?.name,
+  );
+  const selectedCustomerSiteIds = selectedCustomer
+    ? selectedCustomer.sites
+        .filter((site) => selectedCustomerSiteNames.includes(site.name))
+        .map((site) => site.id)
+    : [];
 
   return (
     <BackofficeShell
@@ -306,7 +330,7 @@ export default async function EmployeeDetailPage({ params, searchParams }: Props
                 <EditCustomerSiteSelect
                   customers={customers}
                   selectedCustomerId={selectedCustomerId}
-                  selectedCustomerSiteId={employee.customerSiteId || ""}
+                  selectedCustomerSiteIds={selectedCustomerSiteIds}
                 />
                 <EditField label="Photo URL ou base64" name="photoUrl" defaultValue={employee.photoUrl} />
 
@@ -719,29 +743,36 @@ function EditInterventionMultiSelect({
 
   return (
     <div className="space-y-2 md:col-span-2">
-      <label className="text-sm font-medium text-slate-600" htmlFor="interventionTypeIds">
+      <label className="text-sm font-medium text-slate-600">
         Types d&apos;intervention
       </label>
-      <select
-        id="interventionTypeIds"
-        name="interventionTypeIds"
-        defaultValue={defaultValues}
-        multiple
-        className="min-h-32 w-full rounded-lg border bg-white px-4 py-3"
-      >
-        {missingValues.map((value) => (
-          <option key={value} value={value}>
-            Type existant
-          </option>
-        ))}
+      <div className="grid gap-2 rounded-lg border bg-white p-4">
         {items.map((item) => (
-          <option key={item.id} value={item.id}>
-            {item.name}
-          </option>
+          <label
+            key={item.id}
+            className="flex items-start gap-3 rounded-lg border border-slate-200 px-3 py-3 text-sm"
+          >
+            <input
+              type="checkbox"
+              name="interventionTypeIds"
+              value={item.id}
+              defaultChecked={defaultValues.includes(item.id)}
+              className="mt-1"
+            />
+            <span className="min-w-0">
+              <span className="block font-semibold text-slate-900">{item.name}</span>
+              {item.description ? (
+                <span className="mt-1 block text-xs leading-5 text-slate-500">{item.description}</span>
+              ) : null}
+            </span>
+          </label>
         ))}
-      </select>
+        {missingValues.map((value) => (
+          <input key={value} type="hidden" name="interventionTypeIds" value={value} />
+        ))}
+      </div>
       <p className="text-xs text-slate-500">
-        Maintenez Ctrl pour sélectionner plusieurs types d&apos;intervention.
+        Cochez les types à conserver sur le profil. Décochez pour les retirer.
       </p>
     </div>
   );
@@ -750,11 +781,11 @@ function EditInterventionMultiSelect({
 function EditCustomerSiteSelect({
   customers,
   selectedCustomerId,
-  selectedCustomerSiteId,
+  selectedCustomerSiteIds,
 }: {
   customers: CustomerItem[];
   selectedCustomerId: string;
-  selectedCustomerSiteId: string;
+  selectedCustomerSiteIds: string[];
 }) {
   const selectedCustomer = customers.find((customer) => customer.id === selectedCustomerId) || null;
   const availableSites = selectedCustomer?.sites.filter((site) => site.isActive) || [];
@@ -782,28 +813,40 @@ function EditCustomerSiteSelect({
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-600" htmlFor="customerSiteId">
-            Site autorisé
+          <label className="text-sm font-medium text-slate-600">
+            Sites autorisés
           </label>
-          <select
-            id="customerSiteId"
-            name="customerSiteId"
-            defaultValue={selectedCustomerSiteId}
-            className="w-full rounded-lg border bg-white px-4 py-3"
-          >
-            <option value="">Tous les sites du client final</option>
-            {availableSites.map((site) => (
-              <option key={site.id} value={site.id}>
-                {site.name}
-                {site.codeRequired ? " - code requis" : ""}
-              </option>
-            ))}
-          </select>
+          <div className="space-y-2 rounded-lg border bg-white p-4">
+            <p className="text-xs text-slate-500">
+              Si aucun site n&apos;est coché, le collaborateur est autorisé sur tous les sites du client final.
+            </p>
+            {availableSites.length === 0 ? (
+              <p className="text-sm text-slate-500">Aucun site actif pour ce client final.</p>
+            ) : (
+              availableSites.map((site) => (
+                <label
+                  key={site.id}
+                  className="flex items-center gap-3 rounded-lg border border-slate-200 px-3 py-3 text-sm"
+                >
+                  <input
+                    type="checkbox"
+                    name="customerSiteIds"
+                    value={site.id}
+                    defaultChecked={selectedCustomerSiteIds.includes(site.id)}
+                  />
+                  <span className="font-medium text-slate-900">
+                    {site.name}
+                    {site.codeRequired ? " - code requis" : ""}
+                  </span>
+                </label>
+              ))
+            )}
+          </div>
         </div>
       </div>
 
       <p className="text-xs text-slate-500">
-        Pour ajouter, modifier ou supprimer un client final, utilisez le bouton “Gérer les clients”.
+        Cochez les sites à conserver. Décochez-les pour les retirer du profil.
       </p>
     </div>
   );
